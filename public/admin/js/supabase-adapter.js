@@ -29,7 +29,9 @@
       headers: Object.assign({}, HEADERS, opts.headers || {}),
     });
     if (!res.ok) throw new Error(`Supabase ${res.status}`);
-    return res.status === 204 ? null : res.json();
+    /* 201/204 + Prefer: return=minimal 응답은 본문이 비어 있다 */
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
   }
 
   /* ── 좌표 → 콘솔 지도(제주 SVG viewBox 720×380) 좌표 ── */
