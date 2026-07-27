@@ -64,32 +64,42 @@
       <div class="login-form-area">
         <div class="login-card">
           <h1>기관 계정 로그인</h1>
-          <p class="sub">기관 계정으로 로그인해 주세요. 공공 SSO 연동은 준비 중입니다.</p>
+          <p class="sub">${OP.auth.useSupabase
+            ? "등록된 운영자 이메일 계정으로 로그인해 주세요."
+            : "기관 계정으로 로그인해 주세요. 공공 SSO 연동은 준비 중입니다."}</p>
           <form id="loginForm" novalidate>
-            <div class="field"><label for="lid">기관 계정 아이디</label>
-              <input class="inp" id="lid" name="loginId" autocomplete="username" required></div>
+            <div class="field"><label for="lid">${OP.auth.useSupabase ? "운영자 이메일" : "기관 계정 아이디"}</label>
+              <input class="inp" id="lid" name="loginId" type="${OP.auth.useSupabase ? "email" : "text"}"
+                autocomplete="username" required></div>
             <div class="field"><label for="lpw">비밀번호</label>
               <input class="inp" id="lpw" name="password" type="password" autocomplete="current-password" required></div>
             <p class="login-msg ${expired ? "info" : ""}" id="loginMsg" role="alert">${
               expired ? "보안을 위해 로그인 세션이 종료되었습니다. 다시 로그인해 주세요." : ""}</p>
             <button class="btn primary" type="submit">로그인</button>
           </form>
-          <div class="mock-hint">
+          ${OP.auth.useSupabase ? `<div class="mock-hint">
+            등록된 운영자만 접근할 수 있습니다. 계정 문의는 시스템 관리자에게 연락해 주세요.
+          </div>` : `<div class="mock-hint">
             <b>시연용 mock 계정</b> — 실제 인증 서버가 연동되지 않은 데모 환경입니다.<br>
             아이디 <code>jeju.kim</code> / <code>jeju.park</code> / <code>jeju.lee</code> ·
             비밀번호 <code>doglink-demo</code><br>
             총괄 계정 <code>admin</code> · 비밀번호 <code>doglink-super</code>
-          </div>
+          </div>`}
         </div>
       </div>
     </div>`;
-    $("#loginForm").addEventListener("submit", e => {
+    $("#loginForm").addEventListener("submit", async e => {
       e.preventDefault();
-      const res = OP.auth.login($("#lid").value, $("#lpw").value);
+      const btn = e.target.querySelector("button[type=submit]");
+      btn.disabled = true;
+      const res = await OP.auth.login($("#lid").value, $("#lpw").value);
+      btn.disabled = false;
       if (!res.ok) {
         const m = $("#loginMsg"); m.classList.remove("info"); m.textContent = res.message;
         return;
       }
+      /* 로그인 직후 원격 큐 즉시 동기화 (강화 RLS에서는 로그인 후에만 조회 가능) */
+      if (OP.supabaseSync) OP.supabaseSync.pull();
       location.hash = returnTo && returnTo.startsWith("#/") ? returnTo : "#/queue";
     });
     $("#lid").focus();

@@ -31,6 +31,7 @@ for (const name of [".env", ".env.local"]) {
 const url = (process.env.VITE_SUPABASE_URL || "").trim();
 const anonKey = (process.env.VITE_SUPABASE_ANON_KEY || "").trim();
 const googleMapsKey = (process.env.VITE_GOOGLE_MAPS_KEY || "").trim();
+const operatorAuth = (process.env.VITE_OPERATOR_AUTH || "").trim();
 
 const config = {};
 if (url && anonKey) {
@@ -38,6 +39,9 @@ if (url && anonKey) {
   config.supabaseAnonKey = anonKey;
 }
 if (googleMapsKey) config.googleMapsKey = googleMapsKey;
+/* "supabase"로 설정하면 운영자 콘솔이 Supabase Auth 실계정 로그인으로 전환
+   (supabase/schema-hardening.sql 적용 후 사용) */
+if (operatorAuth) config.operatorAuth = operatorAuth;
 
 const body = `/* 자동 생성 파일 — 편집·커밋 금지 (scripts/gen-admin-config.mjs) */
 window.DOGLINK_CONFIG = ${JSON.stringify(config)};

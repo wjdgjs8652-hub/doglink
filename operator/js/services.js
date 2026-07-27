@@ -20,11 +20,16 @@
   const getReport = id => reports.find(r => r.reportId === id) || null;
   const getMissing = id => missing.find(m => m.id === id) || null;
 
-  /* ══════════ 인증 adapter (mock) ══════════
-     실제 공공 SSO 연동 시 login/logout/currentSession만 교체한다.
+  /* ══════════ 인증 adapter ══════════
+     기본은 mock 계정(시연용). runtime-config에 operatorAuth: "supabase"가
+     설정되면 Supabase Auth(실계정 이메일 로그인) + operator_allowlist 검증으로
+     전환된다 — supabase/schema-hardening.sql 적용 후 사용.
      토큰 하드코딩 없음 — 세션은 sessionStorage에 만료 시각과 함께 저장. */
   const SESSION_KEY = "doglink-operator-session";
   const SESSION_MINUTES = 30;
+  const CFG = window.DOGLINK_CONFIG || {};
+  const USE_SUPA_AUTH = Boolean(
+    CFG.supabaseUrl && CFG.supabaseAnonKey && CFG.operatorAuth === "supabase");
   /* mock 계정 — 시연용. 실제 계정 체계가 아니다.
      admin(총괄) 계정도 기능 권한은 동일하다 — 요구사항 문서에 직급·권한 체계가 없으므로
      별도 권한 등급을 만들지 않는다 (운영자 프롬프트 §17). */
@@ -34,13 +39,53 @@
     { loginId: "jeju.park", password: "doglink-demo", operatorId: "op-park" },
     { loginId: "jeju.lee",  password: "doglink-demo", operatorId: "op-lee"  },
   ];
+
+  function writeSession(session) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  }
+
+  /* Supabase Auth 로그인 + 운영자 허용 목록 검증 */
+  async function supaLogin(email, password) {
+    try {
+      const res = await fetch(`${CFG.supabaseUrl}/auth/v1/token?grant_type=password`, {
+        method: "POST",
+        headers: { apikey: CFG.supabaseAnonKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      /* 실패 사유(계정 존재 여부 등)를 구분해 노출하지 않는다 */
+      if (!res.ok) return { ok: false, message: "계정 정보를 확인하고 다시 시도해 주세요." };
+      const tok = await res.json();
+      const pr = await fetch(
+        `${CFG.supabaseUrl}/rest/v1/operator_allowlist?select=email,display_name,organization_name&email=eq.${encodeURIComponent(email)}`,
+        { headers: { apikey: CFG.supabaseAnonKey, Authorization: `Bearer ${tok.access_token}` } });
+      const rows = pr.ok ? await pr.json() : [];
+      if (!rows.length) {
+        return { ok: false, message: "운영자 권한이 없는 계정입니다. 관리자에게 문의해 주세요." };
+      }
+      writeSession({
+        profile: {
+          id: `supa-${rows[0].email}`,
+          displayName: rows[0].display_name,
+          organizationName: rows[0].organization_name || "",
+        },
+        accessToken: tok.access_token,
+        expiresAt: Date.now() + SESSION_MINUTES * 60000,
+      });
+      return { ok: true };
+    } catch {
+      return { ok: false, message: "인증 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요." };
+    }
+  }
+
   const auth = {
-    login(loginId, password) {
+    useSupabase: USE_SUPA_AUTH,
+    /* 항상 Promise를 반환한다 (mock은 즉시 해석) */
+    async login(loginId, password) {
+      if (USE_SUPA_AUTH) return supaLogin(loginId.trim(), password);
       const acc = MOCK_ACCOUNTS.find(a => a.loginId === loginId.trim() && a.password === password);
       /* 실패 사유(계정 존재 여부 등)를 구분해 노출하지 않는다 */
       if (!acc) return { ok: false, message: "계정 정보를 확인하고 다시 시도해 주세요." };
-      const session = { operatorId: acc.operatorId, expiresAt: Date.now() + SESSION_MINUTES * 60000 };
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      writeSession({ operatorId: acc.operatorId, expiresAt: Date.now() + SESSION_MINUTES * 60000 });
       return { ok: true };
     },
     currentSession() {
@@ -54,7 +99,13 @@
     currentUser() {
       const s = auth.currentSession();
       if (!s || s.expired) return null;
+      if (s.profile) return s.profile; /* Supabase Auth 세션 */
       return OP.MOCK.OPERATORS.find(o => o.id === s.operatorId) || null;
+    },
+    /* Supabase 데이터 접근용 사용자 토큰 (미로그인·mock 모드면 null) */
+    accessToken() {
+      const s = auth.currentSession();
+      return s && !s.expired && s.accessToken ? s.accessToken : null;
     },
     touch() { /* 활동 시 세션 연장 */
       const s = auth.currentSession();

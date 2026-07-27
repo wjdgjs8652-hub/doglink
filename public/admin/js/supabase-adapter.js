@@ -17,17 +17,35 @@
 
   const OP = window.OP;
   const POLL_MS = 30000;
-  const HEADERS = {
-    apikey: cfg.supabaseAnonKey,
-    Authorization: `Bearer ${cfg.supabaseAnonKey}`,
-    "Content-Type": "application/json",
-  };
 
+  /* 강화 RLS 모드에서는 로그인한 운영자의 토큰으로 조회·갱신한다.
+     토큰이 없으면 anon — 시민 공개 범위(INSERT·공개 뷰)만 접근 가능 */
+  function buildHeaders() {
+    const userToken = OP.auth && OP.auth.accessToken ? OP.auth.accessToken() : null;
+    return {
+      apikey: cfg.supabaseAnonKey,
+      Authorization: `Bearer ${userToken || cfg.supabaseAnonKey}`,
+      "Content-Type": "application/json",
+    };
+  }
+
+  let sessionNotified = false;
   async function rest(path, opts = {}) {
     const res = await fetch(`${cfg.supabaseUrl}/rest/v1${path}`, {
       ...opts,
-      headers: Object.assign({}, HEADERS, opts.headers || {}),
+      headers: Object.assign({}, buildHeaders(), opts.headers || {}),
     });
+    if (res.status === 401) {
+      /* 사용자 토큰 만료 — 세션을 종료해 재로그인 유도 */
+      if (OP.auth && OP.auth.accessToken() && !sessionNotified) {
+        sessionNotified = true;
+        if (window.DL && window.DL.toast) {
+          window.DL.toast("인증이 만료되었어요. 다시 로그인해 주세요.", "error");
+        }
+        if (OP.auth.expireNow) OP.auth.expireNow();
+      }
+      throw new Error("Supabase 401");
+    }
     if (!res.ok) throw new Error(`Supabase ${res.status}`);
     /* 201/204 + Prefer: return=minimal 응답은 본문이 비어 있다 */
     const text = await res.text();
