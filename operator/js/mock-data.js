@@ -35,7 +35,11 @@
 
   /* 제보 원본 — OperatorReport 구조 (프롬프트 §11 기준) */
   function makeReport(o) {
-    const ll = toLatLng(o.x, o.y);
+    /* 실좌표(lat/lng)가 지정되면 사용 — SVG 좌표 환산은 실제 해안선과 어긋나
+       바다에 찍힐 수 있으므로 시연 데이터에는 실좌표를 부여한다 */
+    const ll = (o.lat != null && o.lng != null)
+      ? { latitude: o.lat, longitude: o.lng }
+      : toLatLng(o.x, o.y);
     return {
       reportId: o.id,
       submittedAt: o.t,
@@ -77,7 +81,7 @@
     /* ── 응급 · 미처리 17분 경과 (최장 대기 — 카운터 병기 대상) ── */
     makeReport({
       id: "JJ-4823", t: ago(17), status: "submitted",
-      x: 214, y: 168, address: "제주특별자치도 제주시 노형동 ○○빌라 앞 골목", region: "제주시",
+      x: 214, y: 168, lat: 33.4838, lng: 126.4803, address: "제주특별자치도 제주시 노형동 ○○빌라 앞 골목", region: "제주시",
       coat: "갈색", size: "소형견", patt: "단색", collar: "없음",
       aiSummary: "갈색 소형견, 뒷다리 절뚝임, 목줄 없음",
       triage: "emergency", conf: 0.91,
@@ -99,7 +103,7 @@
     /* ── 응급 · 자동신고 5분 전 (시민 확인 후 자동 접수 — 초 단위 이력) ── */
     makeReport({
       id: "JJ-4824", t: agoSec(300), status: "submitted", auto: true,
-      x: 470, y: 282, address: "제주특별자치도 서귀포시 동홍동 ○○공원 동쪽 출입구", region: "서귀포시",
+      x: 470, y: 282, lat: 33.2596, lng: 126.5732, address: "제주특별자치도 서귀포시 동홍동 ○○공원 동쪽 출입구", region: "서귀포시",
       coat: "검정", size: "중형견", patt: "가슴 흰 무늬", collar: "빨간 목줄",
       aiSummary: "검은 중형견, 붉은 목줄, 왼쪽 뒷다리 부상 의심",
       triage: "emergency", conf: 0.88,
@@ -120,7 +124,7 @@
     /* ── 응급 · 확인 중 (배정 완료 — 미처리 카운터 제외) ── */
     makeReport({
       id: "JJ-4818", t: ago(95), updatedAt: ago(21), status: "reviewing",
-      x: 222, y: 160, address: "제주특별자치도 제주시 연동 ○○아파트 후문", region: "제주시",
+      x: 222, y: 160, lat: 33.4879, lng: 126.4938, address: "제주특별자치도 제주시 연동 ○○아파트 후문", region: "제주시",
       coat: "갈색", size: "소형견", patt: "단색", collar: "없음",
       aiSummary: "갈색 소형견, 뒷다리 절뚝임, 사람 경계",
       triage: "emergency", conf: 0.86,
@@ -143,7 +147,7 @@
     /* ── 출동 · 확인 중 ── */
     makeReport({
       id: "JJ-4817", t: ago(38), updatedAt: ago(26), status: "reviewing",
-      x: 462, y: 274, address: "제주특별자치도 서귀포시 동홍동 ○○공원 정문", region: "서귀포시",
+      x: 462, y: 274, lat: 33.2571, lng: 126.5701, address: "제주특별자치도 서귀포시 동홍동 ○○공원 정문", region: "서귀포시",
       coat: "검정", size: "중형견", patt: "가슴 흰 무늬", collar: "빨간 목줄",
       aiSummary: "검은 중형견, 붉은 목줄, 외상 징후 없음",
       triage: "dispatch", conf: 0.79,
@@ -170,7 +174,7 @@
     /* ── 출동 · 출동 상태 ── */
     makeReport({
       id: "JJ-4816", t: ago(64), updatedAt: ago(12), status: "dispatched",
-      x: 598, y: 172, address: "제주특별자치도 서귀포시 성산읍 ○○리 마을회관 주차장", region: "서귀포시",
+      x: 598, y: 172, lat: 33.4472, lng: 126.9092, address: "제주특별자치도 서귀포시 성산읍 ○○리 마을회관 주차장", region: "서귀포시",
       coat: "검정", size: "중형견", patt: "가슴 흰 점", collar: "빨간 목줄",
       aiSummary: "검은 중형견, 가슴 흰 점, 주차장 주변 배회",
       triage: "dispatch", conf: 0.81,
@@ -195,7 +199,7 @@
     /* ── 출동 · 기관 전달 ── */
     makeReport({
       id: "JJ-4815", t: ago(150), updatedAt: ago(70), status: "transferred",
-      x: 150, y: 236, address: "제주특별자치도 제주시 애월읍 해안도로 ○○카페 인근", region: "제주시",
+      x: 150, y: 236, lat: 33.4633, lng: 126.3311, address: "제주특별자치도 제주시 애월읍 해안도로 ○○카페 인근", region: "제주시",
       coat: "흰색", size: "중형견", patt: "등쪽 갈색 얼룩", collar: "파란 목줄",
       aiSummary: "흰 중형견, 등쪽 갈색 얼룩, 파란 목줄",
       triage: "dispatch", conf: 0.77,
@@ -220,7 +224,7 @@
     /* ── 일반 · 접수됨 (판정 번복 이력 보유 — 원 판정 보존 시연) ── */
     makeReport({
       id: "JJ-4822", t: ago(52), updatedAt: ago(30), status: "submitted",
-      x: 320, y: 130, address: "제주특별자치도 제주시 조천읍 ○○초등학교 앞", region: "제주시",
+      x: 320, y: 130, lat: 33.5343, lng: 126.6357, address: "제주특별자치도 제주시 조천읍 ○○초등학교 앞", region: "제주시",
       coat: "베이지", size: "중형견", patt: "단색", collar: "없음",
       aiSummary: "베이지 중형견, 단독 배회",
       triage: "negative", triageNow: "dispatch", conf: 0.64,
@@ -244,7 +248,7 @@
     /* ── 일반 · 접수됨 (오래된 미처리) ── */
     makeReport({
       id: "JJ-4820", t: ago(320), status: "submitted",
-      x: 560, y: 240, address: "제주특별자치도 서귀포시 표선면 ○○리 버스정류장", region: "서귀포시",
+      x: 560, y: 240, lat: 33.3267, lng: 126.8312, address: "제주특별자치도 서귀포시 표선면 ○○리 버스정류장", region: "서귀포시",
       coat: "회색", size: "대형견", patt: "단색", collar: "검정 하네스",
       aiSummary: "회색 대형견, 검정 하네스, 정류장 인근 배회",
       triage: "dispatch", conf: 0.72,
@@ -259,7 +263,7 @@
     /* ── 부정 · 접수됨 ── */
     makeReport({
       id: "JJ-4821", t: ago(26), status: "submitted",
-      x: 262, y: 148, address: "제주특별자치도 제주시 아라동 ○○공원 산책로", region: "제주시",
+      x: 262, y: 148, lat: 33.4693, lng: 126.5442, address: "제주특별자치도 제주시 아라동 ○○공원 산책로", region: "제주시",
       coat: "흰색", size: "소형견", patt: "단색", collar: "분홍 목줄",
       aiSummary: "흰 소형견, 분홍 목줄, 보호자 동반 추정",
       triage: "negative", conf: 0.83,
@@ -274,7 +278,7 @@
     /* ── 보호 상태 ── */
     makeReport({
       id: "JJ-4813", t: ago(560), updatedAt: ago(180), status: "protected",
-      x: 380, y: 300, address: "제주특별자치도 서귀포시 중문동 ○○사거리", region: "서귀포시",
+      x: 380, y: 300, lat: 33.2542, lng: 126.4109, address: "제주특별자치도 서귀포시 중문동 ○○사거리", region: "서귀포시",
       coat: "갈색", size: "중형견", patt: "얼굴 흰 얼룩", collar: "없음",
       aiSummary: "갈색 중형견, 얼굴 흰 얼룩",
       triage: "dispatch", conf: 0.8,
@@ -301,7 +305,7 @@
     /* ── 반환 상태 (실종 신고와 연결됨) ── */
     makeReport({
       id: "JJ-4812", t: ago(900), updatedAt: ago(300), status: "returned",
-      x: 156, y: 230, address: "제주특별자치도 제주시 애월읍 해안도로 버스정류장", region: "제주시",
+      x: 156, y: 230, lat: 33.4667, lng: 126.3392, address: "제주특별자치도 제주시 애월읍 해안도로 버스정류장", region: "제주시",
       coat: "흰색", size: "소형견", patt: "등쪽 갈색 얼룩", collar: "없음",
       aiSummary: "흰 소형견, 등쪽 갈색 얼룩",
       triage: "dispatch", conf: 0.75,
@@ -331,7 +335,7 @@
     /* ── 종결 (기본 큐에서 숨김 — 필터로 조회) ── */
     makeReport({
       id: "JJ-4810", t: ago(2200), updatedAt: ago(1500), status: "closed",
-      x: 128, y: 210, address: "제주특별자치도 제주시 한림읍 ○○항 방파제 입구", region: "제주시",
+      x: 128, y: 210, lat: 33.4139, lng: 126.2621, address: "제주특별자치도 제주시 한림읍 ○○항 방파제 입구", region: "제주시",
       coat: "검정", size: "중형견", patt: "단색", collar: "없음",
       aiSummary: "검은 중형견, 방파제 인근 배회",
       triage: "dispatch", conf: 0.78,
@@ -361,7 +365,7 @@
     /* ── 부정 종결 (기본 큐에서 숨김) ── */
     makeReport({
       id: "JJ-4811", t: ago(1300), updatedAt: ago(1250), status: "negative_closed",
-      x: 300, y: 160, address: "제주특별자치도 제주시 오라동 ○○천 산책로", region: "제주시",
+      x: 300, y: 160, lat: 33.4838, lng: 126.5122, address: "제주특별자치도 제주시 오라동 ○○천 산책로", region: "제주시",
       coat: "베이지", size: "소형견", patt: "단색", collar: "분홍 목줄",
       aiSummary: "베이지 소형견, 보호자 동반",
       triage: "negative", conf: 0.9,
@@ -396,14 +400,14 @@
   const INCOMING_TEMPLATES = [
     {
       triage: "dispatch", coat: "베이지", size: "중형견", patt: "단색", collar: "없음",
-      x: 340, y: 250, address: "제주특별자치도 서귀포시 안덕면 ○○사거리", region: "서귀포시",
+      x: 340, y: 250, lat: 33.2521, lng: 126.3474, address: "제주특별자치도 서귀포시 안덕면 ○○사거리", region: "서귀포시",
       aiSummary: "베이지 중형견, 사거리 인근 배회",
       triBasis: "단독으로 배회하고 있어 구조 출동 대상으로 판단됩니다.",
       desc: "사거리 근처에 개가 혼자 있어요.", tags: ["단독 배회"], conf: 0.74,
     },
     {
       triage: "emergency", coat: "흰색", size: "소형견", patt: "단색", collar: "없음",
-      x: 250, y: 200, address: "제주특별자치도 제주시 오등동 ○○교 아래", region: "제주시",
+      x: 250, y: 200, lat: 33.4718, lng: 126.5334, address: "제주특별자치도 제주시 오등동 ○○교 아래", region: "제주시",
       aiSummary: "흰 소형견, 하천변, 움직임 없음",
       triBasis: "하천변에서 움직임이 거의 없어 응급 상황이 의심됩니다.",
       desc: "다리 아래에 개가 쓰러져 있는 것 같아요.", tags: ["부상 의심", "움직임 둔화"], conf: 0.9, auto: true,

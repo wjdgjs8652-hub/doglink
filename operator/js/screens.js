@@ -372,11 +372,15 @@
   /* ── O2-Map 지도 ──
      Google Maps 키가 설정되면 실지도, 아니면 mock SVG 패널로 폴백한다. */
   function coordTableHTML(rows) {
+    const gmapMode = useGoogleMap();
     return `<details><summary style="font-size:13px;cursor:pointer">좌표 목록으로 보기 (지도 대체 접근)</summary>
       <table class="data" style="margin-top:8px"><caption class="sr-only">지도에 표시된 사건의 좌표 목록</caption>
       <thead><tr><th>사건번호</th><th>트리아지</th><th>상태</th><th>정확 좌표</th><th>주소</th></tr></thead>
       <tbody>${rows.map(r => `<tr>
-        <td class="mono"><a href="#/queue?view=list&reportId=${esc(r.reportId)}">${esc(r.reportId)}</a></td>
+        <td class="mono">${gmapMode
+          ? `<button type="button" class="locate-btn mono" data-locate="${esc(r.reportId)}"
+              aria-label="${esc(r.reportId)} 위치를 지도에서 보기">${esc(r.reportId)}</button>`
+          : `<a href="#/queue?view=list&reportId=${esc(r.reportId)}">${esc(r.reportId)}</a>`}</td>
         <td>${DL.triageBadge(r.triage.currentType, "sm")}</td><td>${DL.statusBadge(r.status)}</td>
         <td class="mono">${r.location.latitude}, ${r.location.longitude}</td>
         <td>${esc(OP.shortAddr(r.location.address))}</td></tr>`).join("")}</tbody></table>
@@ -475,6 +479,14 @@
         ui.gmapFailed = true;
         DL.toast("Google 지도 키 인증에 실패해 시연용 지도로 전환합니다. 키의 웹사이트 제한(리퍼러) 설정을 확인해 주세요.", "error");
         renderQueueArea();
+      });
+      /* 좌표 목록의 사건번호 → 지도에서 해당 위치로 이동 */
+      $(".map-area")?.addEventListener("click", e => {
+        const b = e.target.closest("[data-locate]");
+        if (!b) return;
+        const moved = OP.gmap.focus(b.dataset.locate);
+        if (moved) $("#mapShell")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        else openDetail(b.dataset.locate); /* 좌표 없는 사건은 상세로 폴백 */
       });
       OP.gmap.load()
         .then(() => {

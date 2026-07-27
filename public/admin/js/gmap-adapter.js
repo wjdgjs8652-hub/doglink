@@ -64,8 +64,13 @@
    * @param rows      큐 목록 (운영자용 — 정확 좌표 포함)
    * @param handlers  { onSelect(reportId) } 상세 열기
    */
+  /* 마지막 렌더의 지도·마커 레퍼런스 — 좌표 목록에서 위치 이동(focus)에 사용 */
+  let lastMap = null;
+  let lastMarkers = {};
+
   function render(el, rows, handlers) {
     const gm = window.google.maps;
+    lastMarkers = {};
     const map = new gm.Map(el, {
       center: JEJU_CENTER,
       zoom: 10,
@@ -138,7 +143,9 @@
 
       bounds.extend(pos);
       hasPoint = true;
+      lastMarkers[r.reportId] = marker;
     });
+    lastMap = map;
 
     if (hasPoint) {
       map.fitBounds(bounds, 60);
@@ -151,10 +158,21 @@
     return map;
   }
 
+  /* 지도를 해당 사건 위치로 이동하고 요약 카드를 연다 */
+  function focus(reportId) {
+    const marker = lastMarkers[reportId];
+    if (!marker || !lastMap) return false;
+    lastMap.panTo(marker.getPosition());
+    if (lastMap.getZoom() < 14) lastMap.setZoom(14);
+    window.google.maps.event.trigger(marker, "click");
+    return true;
+  }
+
   OP.gmap = {
     isConfigured: () => Boolean(KEY),
     load,
     render,
+    focus,
     onAuthFailure(fn) {
       authFailHandler = fn;
     },

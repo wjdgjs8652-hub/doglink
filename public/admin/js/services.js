@@ -382,7 +382,9 @@
       const tpl = OP.MOCK.INCOMING_TEMPLATES[kind === "emergency" ? 1 : 0];
       const id = `JJ-${++seq}`;
       const nowD = new Date();
-      const ll = OP.MOCK.toLatLng(tpl.x, tpl.y);
+      const ll = (tpl.lat != null && tpl.lng != null)
+        ? { latitude: tpl.lat, longitude: tpl.lng }
+        : OP.MOCK.toLatLng(tpl.x, tpl.y);
       const r = {
         reportId: id, submittedAt: nowD, updatedAt: nowD,
         photos: [{ id: `${id}-P1`, coat: tpl.coat, patt: tpl.patt, alt: `${tpl.address} 인근에서 촬영된 ${tpl.coat} ${tpl.size} (시연용 신규 제보)` }],
