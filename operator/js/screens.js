@@ -461,6 +461,11 @@
   }
   function bindMap(rows) {
     if (useGoogleMap()) {
+      OP.gmap.onAuthFailure(() => {
+        ui.gmapFailed = true;
+        DL.toast("Google 지도 키 인증에 실패해 시연용 지도로 전환합니다. 키의 웹사이트 제한(리퍼러) 설정을 확인해 주세요.", "error");
+        renderQueueArea();
+      });
       OP.gmap.load()
         .then(() => {
           const el = $("#gmap");

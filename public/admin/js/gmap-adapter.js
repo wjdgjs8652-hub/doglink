@@ -26,6 +26,13 @@
 
   let loadPromise = null;
 
+  /* 키 거부(도메인 제한·비활성 키 등) 시 Google이 호출하는 전역 훅 —
+     스크립트 로드는 성공하므로 onerror로 잡히지 않는다 */
+  let authFailHandler = null;
+  window.gm_authFailure = function () {
+    if (authFailHandler) authFailHandler();
+  };
+
   function load() {
     if (!KEY) return Promise.reject(new Error("Google Maps 키 미설정"));
     if (window.google && window.google.maps && window.google.maps.Map) {
@@ -148,5 +155,8 @@
     isConfigured: () => Boolean(KEY),
     load,
     render,
+    onAuthFailure(fn) {
+      authFailHandler = fn;
+    },
   };
 })();
