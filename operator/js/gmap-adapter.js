@@ -67,6 +67,9 @@
   /* 마지막 렌더의 지도·마커 레퍼런스 — 좌표 목록에서 위치 이동(focus)에 사용 */
   let lastMap = null;
   let lastMarkers = {};
+  /* 사용자가 보던 카메라(중심·줌) — 상세 열기 등으로 지도가 다시 그려져도
+     초기 화면으로 되돌아가지 않도록 보존한다 */
+  let savedCam = null;
 
   function render(el, rows, handlers) {
     const gm = window.google.maps;
@@ -147,13 +150,27 @@
     });
     lastMap = map;
 
-    if (hasPoint) {
+    if (savedCam) {
+      /* 재렌더 — 사용자가 보던 위치·줌 복원 */
+      map.setCenter(savedCam.center);
+      map.setZoom(savedCam.zoom);
+    } else if (hasPoint) {
       map.fitBounds(bounds, 60);
       /* 사건이 1건뿐이면 과확대 방지 */
-      const once = gm.event.addListenerOnce(map, "idle", () => {
+      gm.event.addListenerOnce(map, "idle", () => {
         if (map.getZoom() > 15) map.setZoom(15);
       });
-      void once;
+    }
+
+    /* 카메라 이동이 멈출 때마다 현재 뷰 저장 */
+    map.addListener("idle", () => {
+      const c = map.getCenter();
+      if (c) savedCam = { center: { lat: c.lat(), lng: c.lng() }, zoom: map.getZoom() };
+    });
+
+    /* 상세 패널이 열린 사건은 재렌더 후에도 요약 카드를 유지 */
+    if (handlers.focusId && lastMarkers[handlers.focusId]) {
+      gm.event.trigger(lastMarkers[handlers.focusId], "click");
     }
     return map;
   }

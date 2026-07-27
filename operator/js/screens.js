@@ -491,7 +491,7 @@
       OP.gmap.load()
         .then(() => {
           const el = $("#gmap");
-          if (el) OP.gmap.render(el, rows, { onSelect: openDetail });
+          if (el) OP.gmap.render(el, rows, { onSelect: openDetail, focusId: ui.selectedId });
         })
         .catch(() => {
           /* 로드 실패 — mock 지도로 폴백하고 안내 */
