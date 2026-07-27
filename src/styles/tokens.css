@@ -1,0 +1,105 @@
+:root {
+  /* Background */
+  --color-background: #f8f9f8;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f2f4f2;
+  --color-surface-muted: #e9edea;
+
+  /* Text */
+  --color-text-primary: #10110e;
+  --color-text-secondary: #5f6863;
+  --color-text-tertiary: #8c9590;
+  --color-text-disabled: #aeb5b1;
+  --color-text-inverse: #ffffff;
+
+  /* Border */
+  --color-border-default: #d8ddda;
+  --color-border-strong: #b8c0bc;
+  --color-divider: #dde2df;
+
+  /* Primary */
+  --color-primary-50: #eef1fc;
+  --color-primary-100: #dde4fa;
+  --color-primary-500: #526ed8;
+  --color-primary-600: #425bbe;
+  --color-primary-700: #35499d;
+
+  /* Triage: emergency */
+  --triage-emergency-text: #b01e1e;
+  --triage-emergency-bg: #fdebeb;
+  --triage-emergency-border: #e89b9b;
+  --triage-emergency-solid: #d32f2f;
+
+  /* Triage: dispatch */
+  --triage-dispatch-text: #9a5a10;
+  --triage-dispatch-bg: #fff3d3;
+  --triage-dispatch-border: #f2d58a;
+
+  /* Triage: negative */
+  --triage-negative-text: #59615d;
+  --triage-negative-bg: #eef0ef;
+  --triage-negative-border: #d3d8d5;
+
+  /* Triage: analyzing */
+  --triage-analyzing-text: #35499d;
+  --triage-analyzing-bg: #eef1fc;
+  --triage-analyzing-border: #b9c6f0;
+
+  /* Processing status */
+  --status-pending-text: #9a5a10;
+  --status-pending-bg: #fff3d3;
+  --status-pending-border: #f2d58a;
+
+  --status-success-text: #167a42;
+  --status-success-bg: #e8f7ee;
+  --status-success-border: #a7dcb9;
+
+  --status-transfer-text: #743a99;
+  --status-transfer-bg: #f2e8f8;
+  --status-transfer-border: #d4b5e6;
+
+  --status-danger-text: #b83232;
+  --status-danger-bg: #fdecec;
+  --status-danger-border: #eab2b2;
+
+  --status-neutral-text: #59615d;
+  --status-neutral-bg: #eef0ef;
+  --status-neutral-border: #d3d8d5;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Radius */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+  --radius-xlarge: 20px;
+  --radius-pill: 999px;
+
+  /* Typography scale */
+  --font-display: 700 24px/32px var(--font-family);
+  --font-title-page: 700 20px/28px var(--font-family);
+  --font-title-card: 600 15px/22px var(--font-family);
+  --font-body: 400 14px/22px var(--font-family);
+  --font-body-strong: 600 14px/22px var(--font-family);
+  --font-label: 600 13px/18px var(--font-family);
+  --font-caption: 400 12px/18px var(--font-family);
+  --font-button: 600 14px/20px var(--font-family);
+  --font-mono-id: 500 13px/18px var(--font-family);
+
+  --font-family:
+    Pretendard, SUIT, "Noto Sans KR", "Apple SD Gothic Neo", system-ui,
+    sans-serif;
+
+  /* Layout */
+  --screen-padding-x: 20px;
+  --content-max-width: 600px;
+  --cta-height: 52px;
+}

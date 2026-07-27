@@ -1,0 +1,220 @@
+.map-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.map-view__notice {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-small);
+}
+
+.map-view__list-link {
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  text-decoration: underline;
+}
+
+.map-view__stage {
+  position: relative;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-medium);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.map-view__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.map-view__sea {
+  fill: #e4ecf2;
+}
+
+.map-view__land {
+  fill: #dfe7dc;
+  stroke: var(--color-border-strong);
+  stroke-width: 1;
+}
+
+.map-view__land-label {
+  font-size: 13px;
+  fill: var(--color-text-tertiary);
+}
+
+.map-view__marker {
+  cursor: pointer;
+}
+
+.map-view__marker:focus-visible {
+  outline: none;
+}
+
+.map-view__marker:focus-visible circle:first-of-type,
+.map-view__marker:focus-visible rect {
+  stroke: var(--color-primary-500);
+  stroke-width: 3;
+}
+
+.map-view__marker-ring {
+  fill: none;
+  stroke: var(--color-primary-500);
+  stroke-width: 3;
+}
+
+.map-view__cluster {
+  fill: var(--color-primary-500);
+  opacity: 0.92;
+}
+
+.map-view__cluster--emergency {
+  fill: var(--triage-emergency-solid);
+}
+
+.map-view__cluster-count {
+  fill: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.map-view__controls {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(2, 40px);
+  gap: 4px;
+}
+
+.map-view__controls button {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-default);
+  font-size: 15px;
+}
+
+.map-view__controls button:hover {
+  background: var(--color-surface-subtle);
+}
+
+.map-view__mini-card {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  width: 320px;
+  max-width: calc(100% - 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  /* 그림자는 팝오버에만 허용 */
+  box-shadow: 0 8px 24px rgba(16, 17, 14, 0.18);
+}
+
+.map-view__mini-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: var(--font-mono-id);
+}
+
+.map-view__mini-head button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-small);
+  color: var(--color-text-secondary);
+}
+
+.map-view__mini-body {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.map-view__mini-body img {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: var(--radius-small);
+  object-fit: cover;
+}
+
+.map-view__mini-badges {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-1);
+}
+
+.map-view__mini-badges .triage-badge,
+.map-view__mini-badges .status-badge {
+  height: 22px;
+  padding: 0 var(--space-2);
+  font-size: 11px;
+}
+
+.map-view__mini-summary {
+  font: var(--font-caption);
+  font-weight: 600;
+}
+
+.map-view__mini-meta {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.map-view__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.map-view__legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.map-view__legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.map-view__legend-dot--emergency {
+  background: var(--triage-emergency-solid);
+}
+
+.map-view__legend-dot--dispatch {
+  background: var(--triage-dispatch-text);
+  border-radius: 2px;
+}
+
+.map-view__legend-dot--negative {
+  background: var(--color-text-tertiary);
+}
+
+.map-view__legend-dot--default {
+  background: var(--color-primary-500);
+}

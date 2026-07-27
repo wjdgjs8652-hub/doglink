@@ -1,0 +1,110 @@
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-divider);
+}
+
+.action-bar .btn {
+  min-height: 44px;
+}
+
+.action-bar--done {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+}
+
+.action-bar__kbd {
+  margin-left: var(--space-1);
+  padding: 1px 5px;
+  font: var(--font-caption);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+.btn--secondary .action-bar__kbd,
+.btn--destructive .action-bar__kbd {
+  background: var(--color-surface-subtle);
+  border-color: var(--color-border-default);
+  color: var(--color-text-secondary);
+}
+
+.action-bar__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.action-bar__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.action-bar__facts div {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.action-bar__facts dt {
+  min-width: 132px;
+  font: var(--font-label);
+  color: var(--color-text-secondary);
+}
+
+.action-bar__facts dd {
+  margin: 0;
+  font: var(--font-body);
+}
+
+.action-bar__fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.action-bar__radio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  font: var(--font-body);
+  cursor: pointer;
+}
+
+.action-bar__radio input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary-600);
+}
+
+.action-bar__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font: var(--font-label);
+  color: var(--color-text-secondary);
+}
+
+.action-bar__field textarea {
+  padding: var(--space-2) var(--space-3);
+  font: var(--font-body);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-small);
+  resize: vertical;
+}
+
+.action-bar__error {
+  font: var(--font-caption);
+  color: var(--status-danger-text);
+}

@@ -1,0 +1,35 @@
+.situation-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.situation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: var(--font-body-strong);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.situation-chip:hover {
+  background: var(--color-surface-subtle);
+}
+
+.situation-chip--selected {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-700);
+}
+
+.situation-chip__check {
+  display: inline-flex;
+  width: 14px;
+  justify-content: center;
+}
