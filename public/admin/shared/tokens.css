@@ -1,0 +1,94 @@
+/* ═══════════════════════════════════════════════════════════════════
+   doglink 공용 디자인 토큰 — SSOT: doglink_design_system_v2.md
+   시민 제보자 서비스와 운영자 콘솔이 함께 사용한다.
+   임의 색·임의 간격 금지. 값 변경은 SSOT 문서 개정이 먼저다.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Background */
+  --color-background: #F8F9F8;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F2F4F2;
+  --color-surface-muted: #E9EDEA;
+
+  /* Text */
+  --color-text-primary: #10110E;
+  --color-text-secondary: #5F6863;
+  --color-text-tertiary: #8C9590;
+  --color-text-disabled: #AEB5B1;
+  --color-text-inverse: #FFFFFF;
+
+  /* Border */
+  --color-border-default: #D8DDDA;
+  --color-border-strong: #B8C0BC;
+  --color-divider: #DDE2DF;
+
+  /* Primary (doglink Blue — 파랑=행동 전용) */
+  --color-primary-50: #EEF1FC;
+  --color-primary-100: #DDE4FA;
+  --color-primary-500: #526ED8;
+  --color-primary-600: #425BBE;
+  --color-primary-700: #35499D;
+
+  /* ★ AI 트리아지 — 처리 상태보다 항상 우선 노출. TriageBadge 전용 */
+  --triage-emergency-text: #B01E1E;
+  --triage-emergency-bg: #FDEBEB;
+  --triage-emergency-border: #E89B9B;
+  --triage-emergency-solid: #D32F2F; /* 허용처: EmergencyCounter·토스트 테두리·지도 응급 마커·큐 응급 액센트 바 */
+
+  --triage-dispatch-text: #9A5A10;
+  --triage-dispatch-bg: #FFF3D3;
+  --triage-dispatch-border: #F2D58A;
+  --triage-dispatch-solid: #E8940A;
+
+  --triage-negative-text: #59615D;
+  --triage-negative-bg: #EEF0EF;
+  --triage-negative-border: #D3D8D5;
+
+  --triage-analyzing-text: #35499D;
+  --triage-analyzing-bg: #EEF1FC;
+  --triage-analyzing-border: #B9C6F0;
+
+  /* 처리 상태 (StatusBadge 전용 — 트리아지와 혼용 금지) */
+  --status-pending-text: #9A5A10;
+  --status-pending-bg: #FFF3D3;
+  --status-pending-border: #F2D58A;
+
+  --status-success-text: #167A42;
+  --status-success-bg: #E8F7EE;
+  --status-success-border: #A7DCB9;
+
+  --status-transfer-text: #743A99;
+  --status-transfer-bg: #F2E8F8;
+  --status-transfer-border: #D4B5E6;
+
+  --status-danger-text: #B83232;
+  --status-danger-bg: #FDECEC;
+  --status-danger-border: #EAB2B2;
+
+  --status-neutral-text: #59615D;
+  --status-neutral-bg: #EEF0EF;
+  --status-neutral-border: #D3D8D5;
+
+  /* Spacing (4px 기반) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Radius */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+  --radius-xlarge: 20px;
+  --radius-pill: 999px;
+
+  /* 그림자 — 토스트·팝오버·다이얼로그에만 */
+  --shadow-overlay: 0 4px 16px rgba(16, 17, 14, .14);
+
+  /* 폰트 */
+  --font-sans: Pretendard, SUIT, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}

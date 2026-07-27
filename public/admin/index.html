@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOG-LINK 운영자 콘솔 — 유기견·유실견 제보 연계 서비스 (기관용)</title>
+<!-- 의존성 없는 정적 콘솔 — 브라우저로 직접 열어 실행 (file:// 호환, 빌드 불필요)
+     공용 자산(shared/)은 시민 제보자 서비스와 공유한다. -->
+<link rel="stylesheet" href="shared/tokens.css">
+<link rel="stylesheet" href="shared/components.css">
+<link rel="stylesheet" href="css/operator.css">
+</head>
+<body>
+<div id="app"></div>
+
+<!-- 로드 순서 고정: 공용 → 상태 머신 → mock 데이터 → 서비스 → 컴포넌트 → 화면 → 앱 -->
+<script src="shared/components.js"></script>
+<script src="js/state-machine.js"></script>
+<script src="js/mock-data.js"></script>
+<script src="js/services.js"></script>
+<script src="js/components.js"></script>
+<script src="js/screens.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

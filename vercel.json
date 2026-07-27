@@ -2,5 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [{ "source": "/admin", "destination": "/admin/", "permanent": false }],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

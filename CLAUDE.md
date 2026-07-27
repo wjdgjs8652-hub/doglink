@@ -23,6 +23,7 @@ start "" "mvp-prototype.html"
 | `mvp-prototype.html` | 위 문서의 핵심 기능 3가지를 구현한 시연용 단일 파일 프로토타입. |
 | `doglink_운영자_플로우차트.md` | **운영자 콘솔 요구사항 원본** — 상태 머신·불변 규칙(응급 상시 인지, 3클릭, AI 제안·사람 확정, 감사 추적). |
 | `operator/` · `shared/` · `docs/operator-*.md` | 기관용 운영자 콘솔(무빌드 정적 HTML+JS, `operator/index.html`을 브라우저로 직접 열어 실행)과 시민 서비스 공용 디자인 자산, 구현·mock 문서. |
+| `public/admin/` · `sync_admin.py` | Vercel 배포용 운영자 콘솔 사본 — 배포 URL의 `/admin`에서 서빙. **생성물이므로 직접 편집 금지**: `operator/`·`shared/`를 고친 뒤 `python sync_admin.py`로 재생성한다. |
 | `build_deck.py` / `qa_deck.py` | 발표 덱 생성기와 기하 QA. `성냥팔아요_발표자료.pptx`는 **생성물이므로 직접 편집하지 말고 스크립트를 고쳐 다시 만든다.** |
 
 `.docx`는 Read 툴로 못 읽는다. 압축을 풀어 `word/document.xml`의 `w:t` 노드를 이어붙여야 한다 (한글 때문에 출력은 반드시 UTF-8로 파일에 쓸 것 — Windows 콘솔은 cp949라 `print`가 깨진다).
