@@ -1,5 +1,5 @@
 import { delay } from "./mock-config";
-import { isSupabaseConfigured, supabase } from "./supabase-client";
+import { isSupabaseConfigured, sbUpload } from "./supabase-client";
 
 /**
  * 사진 업로드 서비스 adapter.
@@ -80,21 +80,18 @@ export async function uploadPhoto(
   dataUrl: string,
   onProgress: (percent: number) => void,
 ): Promise<{ remoteUrl: string }> {
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured) {
     onProgress(15);
     const blob = await (await fetch(dataUrl)).blob();
     onProgress(40);
     const path = `reports/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}.jpg`;
-    const { error } = await supabase.storage
-      .from("report-photos")
-      .upload(path, blob, { contentType: "image/jpeg" });
-    if (error) {
+    try {
+      const { publicUrl } = await sbUpload("report-photos", path, blob, "image/jpeg");
+      onProgress(100);
+      return { remoteUrl: publicUrl };
+    } catch {
       throw new Error("사진 업로드에 실패했어요. 다시 시도해 주세요.");
     }
-    onProgress(90);
-    const { data } = supabase.storage.from("report-photos").getPublicUrl(path);
-    onProgress(100);
-    return { remoteUrl: data.publicUrl };
   }
 
   for (const p of [15, 40, 70, 90, 100]) {
