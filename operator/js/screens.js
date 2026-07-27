@@ -359,8 +359,43 @@
     $(`#qr-${CSS.escape(ui.focusId)}`)?.scrollIntoView({ block: "nearest" });
   }
 
-  /* ── O2-Map (mock map adapter — SDK 미연동 시 폴백 패널) ── */
+  /* ── O2-Map 지도 ──
+     Google Maps 키가 설정되면 실지도, 아니면 mock SVG 패널로 폴백한다. */
+  function coordTableHTML(rows) {
+    return `<details><summary style="font-size:13px;cursor:pointer">좌표 목록으로 보기 (지도 대체 접근)</summary>
+      <table class="data" style="margin-top:8px"><caption class="sr-only">지도에 표시된 사건의 좌표 목록</caption>
+      <thead><tr><th>사건번호</th><th>트리아지</th><th>상태</th><th>정확 좌표</th><th>주소</th></tr></thead>
+      <tbody>${rows.map(r => `<tr>
+        <td class="mono"><a href="#/queue?view=list&reportId=${esc(r.reportId)}">${esc(r.reportId)}</a></td>
+        <td>${DL.triageBadge(r.triage.currentType, "sm")}</td><td>${DL.statusBadge(r.status)}</td>
+        <td class="mono">${r.location.latitude}, ${r.location.longitude}</td>
+        <td>${esc(OP.shortAddr(r.location.address))}</td></tr>`).join("")}</tbody></table>
+    </details>`;
+  }
+  function useGoogleMap() {
+    return OP.gmap && OP.gmap.isConfigured() && !ui.gmapFailed;
+  }
+  function gmapAreaHTML(rows) {
+    return `<div class="map-area">
+      <p class="map-note">Google 지도 연동 — 운영자 화면이므로 <b>정확 좌표</b>가 표시됩니다.
+        시민 화면에는 위치 범위만 전달됩니다. 마커를 선택하면 사건 요약과 상세 보기가 열립니다.</p>
+      <div class="map-shell" id="mapShell">
+        <div id="gmap" class="gmap-canvas" role="application"
+          aria-label="제보 위치 지도 (Google Maps). 동일 데이터는 아래 좌표 목록으로도 확인할 수 있습니다.">
+          <p class="gmap-loading">지도를 불러오고 있어요…</p>
+        </div>
+        <div class="map-legend" aria-hidden="true">
+          <span><i style="background:var(--triage-emergency-solid)"></i>응급</span>
+          <span><i style="background:#E8940A"></i>출동</span>
+          <span><i class="dot" style="background:var(--color-text-tertiary)"></i>부정</span>
+          <span><i style="background:#526ED8"></i>분석 중</span>
+        </div>
+      </div>
+      ${coordTableHTML(rows)}
+    </div>`;
+  }
   function mapHTML(rows) {
+    if (useGoogleMap()) return gmapAreaHTML(rows);
     const m = ui.map;
     const vb = `${m.cx - 360 / m.z} ${m.cy - 190 / m.z} ${720 / m.z} ${380 / m.z}`;
     /* 근접 마커 클러스터링 (화면 거리 기준) */
@@ -421,18 +456,24 @@
           <span><i class="chk"></i>종결 (체크)</span>
         </div>
       </div>
-      <details><summary style="font-size:13px;cursor:pointer">좌표 목록으로 보기 (지도 대체 접근)</summary>
-        <table class="data" style="margin-top:8px"><caption class="sr-only">지도에 표시된 사건의 좌표 목록</caption>
-        <thead><tr><th>사건번호</th><th>트리아지</th><th>상태</th><th>정확 좌표</th><th>주소</th></tr></thead>
-        <tbody>${rows.map(r => `<tr>
-          <td class="mono"><a href="#/queue?view=list&reportId=${esc(r.reportId)}">${esc(r.reportId)}</a></td>
-          <td>${DL.triageBadge(r.triage.currentType, "sm")}</td><td>${DL.statusBadge(r.status)}</td>
-          <td class="mono">${r.location.latitude}, ${r.location.longitude}</td>
-          <td>${esc(OP.shortAddr(r.location.address))}</td></tr>`).join("")}</tbody></table>
-      </details>
+      ${coordTableHTML(rows)}
     </div>`;
   }
   function bindMap(rows) {
+    if (useGoogleMap()) {
+      OP.gmap.load()
+        .then(() => {
+          const el = $("#gmap");
+          if (el) OP.gmap.render(el, rows, { onSelect: openDetail });
+        })
+        .catch(() => {
+          /* 로드 실패 — mock 지도로 폴백하고 안내 */
+          ui.gmapFailed = true;
+          DL.toast("Google 지도를 불러오지 못해 시연용 지도로 전환합니다.", "error");
+          renderQueueArea();
+        });
+      return;
+    }
     const shell = $("#mapShell");
     shell.addEventListener("click", e => {
       const zb = e.target.closest("[data-mz]");

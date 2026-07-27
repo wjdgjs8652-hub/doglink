@@ -438,3 +438,32 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 }
 .pviewer .img .photo-img { object-fit: contain; background: #1b1d21; }
 .photo-full .photo-img { max-height: 70vh; object-fit: contain; }
+
+/* ── Google Maps 연동 (O2-Map) ── */
+.gmap-canvas {
+  width: 100%;
+  height: 520px;
+  border-radius: var(--radius-xlarge);
+  background: var(--color-surface-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 720px) {
+  .gmap-canvas { height: 380px; }
+}
+.gmap-loading {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+.gmap-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 240px;
+  font-family: inherit;
+}
+.gmap-info__title { font-weight: 700; font-size: 14px; }
+.gmap-info__badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.gmap-info__addr { font-size: 12.5px; color: var(--color-text-primary); }
+.gmap-info__coord { font-size: 11.5px; color: var(--color-text-secondary); }

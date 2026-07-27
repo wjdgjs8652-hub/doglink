@@ -30,13 +30,17 @@ for (const name of [".env", ".env.local"]) {
 /* trim: 환경 변수에 섞일 수 있는 BOM·공백 문자를 방어적으로 제거 */
 const url = (process.env.VITE_SUPABASE_URL || "").trim();
 const anonKey = (process.env.VITE_SUPABASE_ANON_KEY || "").trim();
+const googleMapsKey = (process.env.VITE_GOOGLE_MAPS_KEY || "").trim();
+
+const config = {};
+if (url && anonKey) {
+  config.supabaseUrl = url;
+  config.supabaseAnonKey = anonKey;
+}
+if (googleMapsKey) config.googleMapsKey = googleMapsKey;
 
 const body = `/* 자동 생성 파일 — 편집·커밋 금지 (scripts/gen-admin-config.mjs) */
-window.DOGLINK_CONFIG = ${
-  url && anonKey
-    ? JSON.stringify({ supabaseUrl: url, supabaseAnonKey: anonKey })
-    : "{}"
-};
+window.DOGLINK_CONFIG = ${JSON.stringify(config)};
 `;
 
 for (const dir of ["operator/js", "public/admin/js"]) {
