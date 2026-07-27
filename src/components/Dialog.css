@@ -1,0 +1,70 @@
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background: rgba(16, 17, 14, 0.44);
+}
+
+.dialog-panel {
+  width: 100%;
+  max-height: min(85dvh, 720px);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-radius: var(--radius-large);
+  /* 그림자는 다이얼로그·토스트·팝오버에만 허용 */
+  box-shadow: 0 12px 32px rgba(16, 17, 14, 0.22);
+  outline: none;
+}
+
+.dialog-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.dialog-panel__title {
+  font: var(--font-title-card);
+}
+
+.dialog-panel__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-small);
+  color: var(--color-text-secondary);
+}
+
+.dialog-panel__close:hover {
+  background: var(--color-surface-subtle);
+}
+
+.dialog-panel__body {
+  padding: var(--space-5);
+  overflow-y: auto;
+  font: var(--font-body);
+}
+
+.dialog-panel__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-divider);
+}
+
+@media (max-width: 480px) {
+  .dialog-backdrop {
+    padding: var(--space-3);
+    align-items: flex-end;
+  }
+}

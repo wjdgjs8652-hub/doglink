@@ -1,0 +1,30 @@
+.ds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.ds__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ds__title {
+  font: var(--font-title-card);
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-divider);
+  padding-bottom: var(--space-2);
+}
+
+.ds__row {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ds__text {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+}

@@ -1,0 +1,108 @@
+.complete {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  /* 하단 고정 CTA가 없는 화면 */
+  padding-bottom: var(--space-10);
+}
+
+.complete__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-6) 0 var(--space-2);
+}
+
+.complete__check {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--status-success-bg);
+  border: 1px solid var(--status-success-border);
+  color: var(--status-success-text);
+}
+
+.complete__title {
+  font: var(--font-display);
+}
+
+.complete__thanks {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+}
+
+.complete__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.complete__label {
+  font: var(--font-label);
+  color: var(--color-text-tertiary);
+}
+
+.complete__report-id {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-primary-100);
+  background: var(--color-primary-50);
+  border-radius: var(--radius-medium);
+}
+
+.complete__report-id:hover {
+  border-color: var(--color-primary-500);
+}
+
+.complete__report-id-value {
+  font: var(--font-display);
+  color: var(--color-primary-700);
+  letter-spacing: 0.04em;
+}
+
+.complete__copy-hint {
+  font: var(--font-label);
+  color: var(--color-primary-600);
+}
+
+.complete__loading {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+}
+
+.complete__share-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.complete__share-feedback {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.complete__status-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cta-height);
+  border-radius: var(--radius-medium);
+  background: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  font: var(--font-button);
+  text-decoration: none;
+}
+
+.complete__status-link:hover {
+  background: var(--color-primary-600);
+}

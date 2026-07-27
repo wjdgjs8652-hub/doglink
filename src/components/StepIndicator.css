@@ -1,0 +1,79 @@
+.step-indicator {
+  padding: var(--space-2) var(--screen-padding-x) var(--space-3);
+}
+
+.step-indicator__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--space-1);
+}
+
+.step-indicator__item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  position: relative;
+}
+
+/* 연결선 */
+.step-indicator__item:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: calc(50% + 12px);
+  left: calc(-50% + 12px);
+  height: 2px;
+  background: var(--color-border-default);
+}
+
+.step-indicator__item--completed:not(:first-child)::before {
+  background: var(--color-primary-500);
+}
+
+.step-indicator__dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-muted);
+  border: 2px solid var(--color-border-default);
+  color: var(--color-text-inverse);
+  z-index: 1;
+}
+
+.step-indicator__item--completed .step-indicator__dot {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+}
+
+.step-indicator__item--current .step-indicator__dot {
+  background: var(--color-surface);
+  border-color: var(--color-primary-500);
+  box-shadow: inset 0 0 0 3px var(--color-surface);
+  background: var(--color-primary-500);
+}
+
+.step-indicator__label {
+  font: var(--font-caption);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.step-indicator__item--current .step-indicator__label {
+  font: var(--font-label);
+  color: var(--color-primary-700);
+}
+
+.step-indicator__item--completed .step-indicator__label {
+  color: var(--color-text-secondary);
+}

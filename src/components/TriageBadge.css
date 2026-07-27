@@ -1,0 +1,66 @@
+.triage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid;
+  font: var(--font-label);
+  white-space: nowrap;
+}
+
+.triage-badge--large {
+  height: 32px;
+  padding: 0 var(--space-4);
+}
+
+.triage-badge--emergency {
+  color: var(--triage-emergency-text);
+  background: var(--triage-emergency-bg);
+  border-color: var(--triage-emergency-border);
+}
+
+.triage-badge--dispatch {
+  color: var(--triage-dispatch-text);
+  background: var(--triage-dispatch-bg);
+  border-color: var(--triage-dispatch-border);
+}
+
+.triage-badge--negative {
+  color: var(--triage-negative-text);
+  background: var(--triage-negative-bg);
+  border-color: var(--triage-negative-border);
+}
+
+.triage-badge--analyzing {
+  color: var(--triage-analyzing-text);
+  background: var(--triage-analyzing-bg);
+  border-color: var(--triage-analyzing-border);
+}
+
+.triage-badge--unavailable {
+  color: var(--color-text-secondary);
+  background: var(--color-surface-subtle);
+  border-color: var(--color-border-default);
+}
+
+.triage-badge__icon {
+  display: inline-flex;
+}
+
+.triage-badge__icon--spin {
+  animation: triage-spin 1.2s linear infinite;
+}
+
+@keyframes triage-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .triage-badge__icon--spin {
+    animation: none;
+  }
+}
