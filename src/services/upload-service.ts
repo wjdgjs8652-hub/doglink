@@ -1,4 +1,5 @@
 import { delay } from "./mock-config";
+import { isSupabaseConfigured, sbUpload } from "./supabase-client";
 
 /**
  * 사진 업로드 서비스 adapter.
@@ -70,13 +71,29 @@ export async function compressPhoto(file: File): Promise<ProcessedPhoto> {
 }
 
 /**
- * mock 업로드: 진행률 콜백을 호출하며 업로드를 흉내 낸다.
- * 실제 서버 연동 시 fetch/XHR 업로드로 교체.
+ * 사진 업로드.
+ * - Supabase 설정 시: Storage 버킷(report-photos)에 실제 업로드
+ * - 미설정 시: mock 진행률 시뮬레이션
+ * (EXIF는 compressPhoto의 canvas 재인코딩 단계에서 이미 제거됨)
  */
 export async function uploadPhoto(
-  _dataUrl: string,
+  dataUrl: string,
   onProgress: (percent: number) => void,
 ): Promise<{ remoteUrl: string }> {
+  if (isSupabaseConfigured) {
+    onProgress(15);
+    const blob = await (await fetch(dataUrl)).blob();
+    onProgress(40);
+    const path = `reports/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}.jpg`;
+    try {
+      const { publicUrl } = await sbUpload("report-photos", path, blob, "image/jpeg");
+      onProgress(100);
+      return { remoteUrl: publicUrl };
+    } catch {
+      throw new Error("사진 업로드에 실패했어요. 다시 시도해 주세요.");
+    }
+  }
+
   for (const p of [15, 40, 70, 90, 100]) {
     await delay(120 + Math.random() * 180);
     onProgress(p);

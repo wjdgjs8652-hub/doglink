@@ -35,7 +35,7 @@
       ${DL.triageBadge(r.triage.currentType, "sm")}
       <span class="qtime" title="${esc(abs)}">${esc(DL.relTime(r.submittedAt))}<small>${esc(DL.hhmm(r.submittedAt))}</small></span>
       <span class="qid">${esc(r.reportId)}</span>
-      <span class="qthumb" aria-hidden="true">${DL.dogSVG(r.photos[0].coat, r.photos[0].patt)}</span>
+      <span class="qthumb" aria-hidden="true">${DL.photoHTML(r.photos[0])}</span>
       <span class="qsum" title="${esc(r.aiSummary)}">${esc(r.aiSummary)}</span>
       <span class="qaddr" title="${esc(r.location.address)}">${esc(shortAddr(r.location.address))}</span>
       ${DL.statusBadge(r.status)}
@@ -96,7 +96,7 @@
         <span class="t-title">응급 제보 접수 — ${esc(r.reportId)}</span>
         <button class="icon-btn" data-x aria-label="알림 닫기 (응급 카운터와 큐 상단 고정은 유지됩니다)">✕</button></div>
       <div class="t-body">
-        <span class="t-thumb" aria-hidden="true">${DL.dogSVG(r.photos[0].coat, r.photos[0].patt)}</span>
+        <span class="t-thumb" aria-hidden="true">${DL.photoHTML(r.photos[0])}</span>
         <div class="t-info">
           <div class="place">${esc(shortAddr(r.location.address))}</div>
           <div class="mono" style="font-size:11.5px;color:var(--color-text-secondary)">${esc(DL.ymdhms(r.submittedAt))} 접수</div>
@@ -175,11 +175,11 @@
     const cnt = el.querySelector(".cnt");
     function draw() {
       const p = report.photos[idx];
-      imgBox.innerHTML = DL.dogSVG(p.coat, p.patt);
-      const svg = imgBox.querySelector("svg");
-      svg.style.transform = `scale(${zoom})`;
-      svg.setAttribute("aria-label", p.alt);
-      svg.setAttribute("role", "img");
+      imgBox.innerHTML = DL.photoHTML(p);
+      const media = imgBox.querySelector("svg, img");
+      media.style.transform = `scale(${zoom})`;
+      media.setAttribute("aria-label", p.alt || "제보 사진");
+      media.setAttribute("role", "img");
       cnt.textContent = `${idx + 1} / ${report.photos.length}`;
       el.querySelectorAll(".thumbs button").forEach((b, i) => b.setAttribute("aria-current", i === idx));
     }
@@ -193,7 +193,7 @@
         const p = report.photos[idx];
         DL.openDialog({
           title: `${report.reportId} 사진 ${idx + 1}/${report.photos.length}`,
-          body: `<div class="photo-full">${DL.dogSVG(p.coat, p.patt)}</div>
+          body: `<div class="photo-full">${DL.photoHTML(p)}</div>
                  <p style="font-size:12px;color:var(--color-text-secondary);margin:8px 0 0">${esc(p.alt)}</p>`,
           wide: true,
         });
@@ -218,7 +218,7 @@
         </div>
       </div>
       ${many ? `<div class="thumbs">${report.photos.map((p, i) =>
-        `<button data-thumb="${i}" aria-label="사진 ${i + 1} 보기">${DL.dogSVG(p.coat, p.patt)}</button>`).join("")}</div>` : ""}
+        `<button data-thumb="${i}" aria-label="사진 ${i + 1} 보기">${DL.photoHTML(p)}</button>`).join("")}</div>` : ""}
     </div>`;
   }
 

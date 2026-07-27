@@ -470,7 +470,7 @@
     card.innerHTML = `<div class="mc-head">${DL.triageBadge(r.triage.currentType, "sm")}
         <span class="mc-id">${esc(r.reportId)}</span>
         <button class="icon-btn" data-x aria-label="카드 닫기" style="margin-left:auto">✕</button></div>
-      <div class="mc-body"><span class="mc-thumb" aria-hidden="true">${DL.dogSVG(r.photos[0].coat, r.photos[0].patt)}</span>
+      <div class="mc-body"><span class="mc-thumb" aria-hidden="true">${DL.photoHTML(r.photos[0])}</span>
         <div>${esc(r.aiSummary)}<br><span class="mono" style="color:var(--color-text-secondary)">${r.location.latitude}, ${r.location.longitude}</span></div></div>
       <button class="btn primary" data-open>상세 열기</button>`;
     card.querySelector("[data-x]").addEventListener("click", () => card.remove());
@@ -742,8 +742,8 @@
       <div class="chead">${DL.triageBadge ? "" : ""}<span class="cid">${esc(c.candidateId)}</span>
         <span class="cmeta">${esc(typeLabel)} · ${esc(DL.ymdhm(c.when))} · 거리 약 ${c.distanceKm}km · 시간차 ${esc(DL.durText(c.timeDiffMinutes * 60000))}</span></div>
       <div class="compare">
-        <figure><div class="ph">${DL.dogSVG(r.photos[0].coat, r.photos[0].patt)}</div><figcaption>현재 사건 ${esc(r.reportId)}</figcaption></figure>
-        <figure><div class="ph">${DL.dogSVG(c.photo.coat, c.photo.patt)}</div><figcaption>${esc(typeLabel)} ${esc(c.candidateId)}${c.ref.name ? ` (${esc(c.ref.name)})` : ""}</figcaption></figure>
+        <figure><div class="ph">${DL.photoHTML(r.photos[0])}</div><figcaption>현재 사건 ${esc(r.reportId)}</figcaption></figure>
+        <figure><div class="ph">${DL.photoHTML(c.photo)}</div><figcaption>${esc(typeLabel)} ${esc(c.candidateId)}${c.ref.name ? ` (${esc(c.ref.name)})` : ""}</figcaption></figure>
       </div>
       <div class="score"><span class="cap">참고 유사 점수</span>
         <span class="bar" aria-hidden="true"><i style="width:${c.score}%"></i></span><b>${c.score}점</b></div>
@@ -1032,7 +1032,7 @@
         <div class="em-toast" style="max-width:360px">
           <div class="t-head"><span aria-hidden="true">🚨</span><span class="t-title">응급 제보 접수 — ${esc(em.reportId)}</span>
             <button class="icon-btn" aria-label="알림 닫기">✕</button></div>
-          <div class="t-body"><span class="t-thumb">${DL.dogSVG(em.photos[0].coat, em.photos[0].patt)}</span>
+          <div class="t-body"><span class="t-thumb">${DL.photoHTML(em.photos[0])}</span>
             <div class="t-info"><div class="place">${esc(OP.shortAddr(em.location.address))}</div>
               <div class="basis">${esc(em.triage.summary)}</div></div></div>
           <div class="t-acts"><button class="btn primary">사건 열기</button></div>

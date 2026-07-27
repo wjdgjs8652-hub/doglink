@@ -5,9 +5,12 @@
   "description": "DOG-LINK 유기견·유실견 발견 제보 연계 서비스 - 시민 제보자 모바일 웹",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/gen-admin-config.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/gen-admin-config.mjs",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync-admin": "python sync_admin.py"
   },
   "dependencies": {
     "react": "^18.3.1",

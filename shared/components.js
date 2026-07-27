@@ -178,6 +178,14 @@
     </svg>`;
   }
 
+  /* ── 사진 렌더링: 실제 URL이 있으면 <img>, 없으면 시연용 SVG ── */
+  function photoHTML(p) {
+    if (p && typeof p.url === "string" && /^https?:\/\//.test(p.url)) {
+      return `<img class="photo-img" src="${esc(p.url)}" alt="${esc(p.alt || "제보 사진")}" loading="lazy">`;
+    }
+    return dogSVG(p && p.coat, (p && p.patt) || "");
+  }
+
   /* ── 브랜드 로고 심볼 (DogLink — 위치 핀 + 강아지 실루엣 + 물음표) ──
      fg: 핀·강아지 색, bg: 원형 창·물음표 색.
      밝은 배경: 기본값(브랜드 블루 + 흰 창) / 어두운 배경: fg "#fff", bg에 배경색.
@@ -200,6 +208,6 @@
   window.DL = {
     esc, pad, hhmm, hhmmss, ymd, ymdhm, ymdhms, relTime, durText,
     TRIAGE, triageBadge, STATUS_META, statusBadge, processTimeline,
-    toast, openDialog, dogSVG, brandLogoSVG, BRAND_BLUE,
+    toast, openDialog, dogSVG, photoHTML, brandLogoSVG, BRAND_BLUE,
   };
 })();
