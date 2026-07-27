@@ -18,13 +18,13 @@ DEST = ROOT / "public" / "admin"
 
 
 def main():
-    if DEST.exists():
-        shutil.rmtree(DEST)
-    DEST.mkdir(parents=True)
+    # rmtree 대신 덮어쓰기 — OneDrive가 디렉터리 핸들을 잡아 rmdir이 거부되는 일이 잦다.
+    # 원본에서 사라진 파일은 남을 수 있으니, 파일을 지웠다면 public/admin 쪽도 수동으로 지울 것.
+    DEST.mkdir(parents=True, exist_ok=True)
 
-    shutil.copytree(ROOT / "operator" / "css", DEST / "css")
-    shutil.copytree(ROOT / "operator" / "js", DEST / "js")
-    shutil.copytree(ROOT / "shared", DEST / "shared")
+    shutil.copytree(ROOT / "operator" / "css", DEST / "css", dirs_exist_ok=True)
+    shutil.copytree(ROOT / "operator" / "js", DEST / "js", dirs_exist_ok=True)
+    shutil.copytree(ROOT / "shared", DEST / "shared", dirs_exist_ok=True)
 
     html = (ROOT / "operator" / "index.html").read_text(encoding="utf-8")
     html = html.replace("../shared/", "shared/")

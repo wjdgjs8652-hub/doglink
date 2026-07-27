@@ -24,6 +24,8 @@
     { id: "op-kim",  displayName: "김담당",   organizationName: "제주특별자치도 동물방역과" },
     { id: "op-park", displayName: "박주무관", organizationName: "제주시 동물복지과" },
     { id: "op-lee",  displayName: "이주무관", organizationName: "제주동물보호센터" },
+    /* 총괄(admin) 계정 프로필 — 시드 데이터가 OPERATORS[0..2] 인덱스를 참조하므로 반드시 뒤에 추가 */
+    { id: "op-admin", displayName: "총괄관리자", organizationName: "제주특별자치도 동물방역과" },
   ];
   const SYSTEM = { type: "system", displayName: "DOG-LINK 시스템" };
 

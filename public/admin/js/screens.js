@@ -77,7 +77,8 @@
           <div class="mock-hint">
             <b>시연용 mock 계정</b> — 실제 인증 서버가 연동되지 않은 데모 환경입니다.<br>
             아이디 <code>jeju.kim</code> / <code>jeju.park</code> / <code>jeju.lee</code> ·
-            비밀번호 <code>doglink-demo</code>
+            비밀번호 <code>doglink-demo</code><br>
+            총괄 계정 <code>admin</code> · 비밀번호 <code>doglink-super</code>
           </div>
         </div>
       </div>

@@ -108,7 +108,7 @@ start "" "mvp-prototype.html"
   인지된다. 토스트에 타이머를 달지 말 것.
 - **전부 mock adapter다** (인증·실시간·지도·알림·PDF — `docs/operator-mock-api.md`에 연동
   필요 지점 정리). 신규 제보 유입 시연은 계정 메뉴의 "시연 도구"에서 수동 주입한다.
-  mock 계정: `jeju.kim`/`jeju.park`/`jeju.lee` + `doglink-demo`.
+  mock 계정: `jeju.kim`/`jeju.park`/`jeju.lee` + `doglink-demo`, 총괄 `admin` + `doglink-super`(권한 등급 동일).
 - **공용 자산은 `shared/`** (tokens.css·components.css·components.js — TriageBadge·StatusBadge·
   ProcessTimeline·Dialog·Toast·날짜 유틸). `mvp-prototype.html`은 단일 파일 속성을 지키기 위해
   내부 복사본을 유지한다 — 규격을 바꿀 땐 양쪽과 SSOT 문서를 함께 본다.

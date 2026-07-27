@@ -8,7 +8,7 @@
 
 | 서비스 | 현재 구현 (mock) | 실제 연동 시 필요한 것 |
 |---|---|---|
-| auth | 하드코딩 없는 시연 계정 3개, sessionStorage 세션(30분, 활동 연장) | 공공 SSO / 기관 계정 서버. `login/currentSession/logout` 교체 |
+| auth | 시연 계정 4개(운영자 3 + 총괄 `admin`/`doglink-super` — 권한 등급은 동일, 문서에 권한 체계가 없어 만들지 않음), sessionStorage 세션(30분, 활동 연장) | 공공 SSO / 기관 계정 서버. `login/currentSession/logout` 교체 |
 | operator-report / queue | 메모리 배열(`mock-data.js`), 새로고침 시 초기화 | 조회 API + 서버 필터·정렬·페이지네이션 (현재 클라이언트 검색은 소규모 데이터 전제) |
 | transition | `requestTransition` — 상태 머신 검증 + 감사 로그를 동기 단일 함수로 처리 | **서버 트랜잭션 필수**: 상태 변경과 감사 로그가 한쪽만 성공하면 안 됨. 실패 시 클라이언트는 롤백 + 오류 토스트 경로 유지 |
 | triage override / matching | 로컬 반영 + 감사 로그. 유사 점수는 규칙 기반 가중 합산(털색30·무늬20·크기15·목줄10·거리15·시간차10, 45점 미만 컷) | AI 매칭 API. 무관 판정 후 재제안 정책은 서버 정책 따름 |

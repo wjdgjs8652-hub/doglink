@@ -25,8 +25,11 @@
      토큰 하드코딩 없음 — 세션은 sessionStorage에 만료 시각과 함께 저장. */
   const SESSION_KEY = "doglink-operator-session";
   const SESSION_MINUTES = 30;
-  /* mock 계정 — 시연용. 실제 계정 체계가 아니다 */
+  /* mock 계정 — 시연용. 실제 계정 체계가 아니다.
+     admin(총괄) 계정도 기능 권한은 동일하다 — 요구사항 문서에 직급·권한 체계가 없으므로
+     별도 권한 등급을 만들지 않는다 (운영자 프롬프트 §17). */
   const MOCK_ACCOUNTS = [
+    { loginId: "admin",     password: "doglink-super", operatorId: "op-admin" },
     { loginId: "jeju.kim",  password: "doglink-demo", operatorId: "op-kim"  },
     { loginId: "jeju.park", password: "doglink-demo", operatorId: "op-park" },
     { loginId: "jeju.lee",  password: "doglink-demo", operatorId: "op-lee"  },
