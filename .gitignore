@@ -1,0 +1,10 @@
+# 생성물 — build_deck.py로 재생성 (파일 잠금 문제도 있어 추적 제외)
+성냥팔아요_발표자료.pptx
+
+# 로컬 전용 설정
+.claude/settings.local.json
+
+# Office 임시/잠금 파일
+~$*
+*.tmp
+desktop.ini

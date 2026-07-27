@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>doglink 디자인 시스템 v2.0 — 미리보기</title>
+<style>
+  :root{
+    --bg:#F8F9F8; --panel:#FFFFFF; --surface-subtle:#F2F4F2; --surface-muted:#E9EDEA;
+    --ink:#10110E; --muted:#5F6863; --text3:#8C9590; --disabled:#AEB5B1;
+    --line:#D8DDDA; --border-strong:#B8C0BC; --divider:#DDE2DF;
+    --brand:#526ED8; --brand-hover:#425BBE; --brand-pressed:#35499D; --brand-soft:#EEF1FC;
+    --warn:#9A5A10; --warn-soft:#FFF3D3; --warn-border:#F2D58A;
+    --ok:#167A42; --ok-soft:#E8F7EE; --ok-border:#A7DCB9;
+    --transfer:#743A99; --transfer-soft:#F2E8F8; --transfer-border:#D4B5E6;
+    --danger:#B83232; --danger-soft:#FDECEC; --danger-border:#EAB2B2;
+    --neutral:#59615D; --neutral-soft:#EEF0EF; --neutral-border:#D3D8D5;
+    --tri-em:#B01E1E; --tri-em-bg:#FDEBEB; --tri-em-border:#E89B9B; --tri-em-solid:#D32F2F;
+    --tri-di:#9A5A10; --tri-di-bg:#FFF3D3; --tri-di-border:#F2D58A; --tri-di-solid:#E8940A;
+    --tri-ne:#59615D; --tri-ne-bg:#EEF0EF; --tri-ne-border:#D3D8D5;
+    --tri-an:#35499D; --tri-an-bg:#EEF1FC; --tri-an-border:#B9C6F0;
+    --radius-sm:8px; --radius-md:12px; --radius:16px; --radius-xl:20px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.57;
+    font-family:Pretendard,SUIT,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:32px 20px 80px}
+  main{max-width:960px;margin:0 auto}
+  h1{font-size:24px;line-height:32px}
+  h1 small{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:4px}
+  h2{font-size:18px;line-height:26px;margin:40px 0 4px}
+  .sub{font-size:13px;color:var(--muted);margin:0 0 14px}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-top:12px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .col{display:grid;gap:8px}
+
+  .sw{width:150px;border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;font-size:12px}
+  .sw i{display:block;height:44px}
+  .sw div{padding:6px 9px;background:var(--panel)}
+  .sw b{display:block;font-size:12px}
+  .sw code{color:var(--muted);font-size:11px;font-family:ui-monospace,monospace}
+
+  .type-row{display:flex;gap:16px;align-items:baseline;border-bottom:1px solid var(--divider);padding:9px 0}
+  .type-row:last-child{border-bottom:0}
+  .type-row .tk{width:110px;flex:none;font-size:12px;color:var(--muted);font-family:ui-monospace,monospace}
+  .mono{font-variant-numeric:tabular-nums;font-weight:500}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;
+    padding:3px 12px;border-radius:999px;border:1px solid var(--neutral-border);
+    background:var(--neutral-soft);color:var(--neutral);white-space:nowrap;line-height:18px}
+  .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+  .b-pending{background:var(--warn-soft);color:var(--warn);border-color:var(--warn-border)}
+  .b-transfer{background:var(--transfer-soft);color:var(--transfer);border-color:var(--transfer-border)}
+  .b-success{background:var(--ok-soft);color:var(--ok);border-color:var(--ok-border)}
+  .b-danger{background:var(--danger-soft);color:var(--danger);border-color:var(--danger-border)}
+
+  .triage{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 12px;
+    border-radius:999px;font-size:13px;font-weight:600;border:1px solid}
+  .triage.lg{height:32px;font-size:14px}
+  .triage[data-state="emergency"]{background:var(--tri-em-bg);color:var(--tri-em);border-color:var(--tri-em-border)}
+  .triage[data-state="dispatch"]{background:var(--tri-di-bg);color:var(--tri-di);border-color:var(--tri-di-border)}
+  .triage[data-state="negative"]{background:var(--tri-ne-bg);color:var(--tri-ne);border-color:var(--tri-ne-border)}
+  .triage[data-state="analyzing"]{background:var(--tri-an-bg);color:var(--tri-an);border-color:var(--tri-an-border)}
+
+  .btn{border:1px solid var(--line);background:var(--panel);padding:11px 16px;border-radius:var(--radius-md);
+    font:inherit;font-size:14px;font-weight:600;min-height:44px;cursor:pointer}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.emergency{background:var(--tri-em-solid);border-color:var(--tri-em-solid);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+  .tri-card{border:1px solid var(--line);border-radius:var(--radius);padding:16px;max-width:360px}
+  .tri-card[data-state="emergency"]{border:1.5px solid var(--tri-em-border);border-left:4px solid var(--tri-em-solid)}
+  .tri-basis{font-size:14px;margin:10px 0 8px}
+  .tri-note{font-size:12px;color:var(--muted)}
+
+  .em-banner{background:var(--tri-em-solid);color:#fff;padding:16px 20px;font-size:24px;line-height:32px;
+    font-weight:700;border-radius:var(--radius-xl) var(--radius-xl) 0 0;max-width:360px}
+  .em-under{border:1px solid var(--line);border-top:0;border-radius:0 0 var(--radius) var(--radius);
+    padding:14px 20px;max-width:360px;font-size:13px;color:var(--muted)}
+
+  .qrow{display:flex;gap:10px;align-items:center;min-height:48px;padding:6px 12px;max-width:640px;
+    border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel);font-size:13px}
+  .qrow[data-tri="emergency"]{border-left:4px solid var(--tri-em-solid)}
+  .qrow .qid{color:var(--muted)}
+  .qrow .qsum{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  svg.mk{display:block}
+  .cap{font-size:11px;color:var(--muted);text-align:center;margin-top:4px}
+  .warn-note{background:var(--warn-soft);color:var(--warn);border-radius:var(--radius-md);
+    padding:10px 14px;font-size:13px;margin-top:24px}
+</style>
+</head>
+<body>
+<main>
+  <h1>doglink 디자인 시스템 v2.0
+    <small>미리보기 — 원본 규격: doglink_design_system_v2.md (SSOT) · 적용 대상: mvp-prototype.html</small></h1>
+
+  <h2>1. 컬러 토큰</h2>
+  <p class="sub">파랑=행동 · 빨강=응급(트리아지 전용) · 주황=출동/대기 · 초록=완료 · 보라=기관 전달 · 회색=부정/비활성 — 이 매핑은 어느 화면에서도 바뀌지 않습니다.</p>
+  <section>
+    <div class="row">
+      <div class="sw"><i style="background:#526ED8"></i><div><b>brand 500</b><code>#526ED8</code></div></div>
+      <div class="sw"><i style="background:#D32F2F"></i><div><b>triage emergency</b><code>#D32F2F solid</code></div></div>
+      <div class="sw"><i style="background:#E8940A"></i><div><b>triage dispatch</b><code>#E8940A solid</code></div></div>
+      <div class="sw"><i style="background:#EEF0EF;border-bottom:1px solid #D3D8D5"></i><div><b>triage negative</b><code>#EEF0EF</code></div></div>
+      <div class="sw"><i style="background:#9A5A10"></i><div><b>status pending</b><code>#9A5A10</code></div></div>
+      <div class="sw"><i style="background:#743A99"></i><div><b>status transfer</b><code>#743A99</code></div></div>
+      <div class="sw"><i style="background:#167A42"></i><div><b>status success</b><code>#167A42</code></div></div>
+      <div class="sw"><i style="background:#F8F9F8;border-bottom:1px solid #D8DDDA"></i><div><b>background</b><code>#F8F9F8</code></div></div>
+    </div>
+  </section>
+
+  <h2>2. 타이포그래피</h2>
+  <p class="sub">Pretendard 계열 · 굵기 3단계(700/600/400) · 의미 있는 정보 12px 미만 금지 · 숫자는 tabular-nums</p>
+  <section>
+    <div class="type-row"><span class="tk">display 24/32·700</span><span style="font-size:24px;line-height:32px;font-weight:700">응급 자동 신고</span></div>
+    <div class="type-row"><span class="tk">title-page 20/28·700</span><span style="font-size:20px;font-weight:700">제보 지도 및 처리 상태</span></div>
+    <div class="type-row"><span class="tk">title-section 18/26·700</span><span style="font-size:18px;font-weight:700">최근 목격 이력</span></div>
+    <div class="type-row"><span class="tk">body 14/22·400</span><span>서귀포시 ○○공원 인근에서 검은 중형견이 목격되었습니다.</span></div>
+    <div class="type-row"><span class="tk">label 13/18·600</span><span style="font-size:13px;font-weight:600">확인 중</span></div>
+    <div class="type-row"><span class="tk">mono-id 13/18·500</span><span class="mono" style="font-size:13px">JJ-4821 · 18:05:33 · 29.6km</span></div>
+  </section>
+
+  <h2>3. TriageBadge — AI 판정 전용</h2>
+  <p class="sub">아이콘+한글 라벨+색 3요소 생략 불가. 처리 상태(StatusBadge)와 절대 혼용하지 않습니다.</p>
+  <section class="row">
+    <span class="triage lg" data-state="emergency">🚨 응급</span>
+    <span class="triage lg" data-state="dispatch">🚗 출동</span>
+    <span class="triage lg" data-state="negative">✓ 부정</span>
+    <span class="triage lg" data-state="analyzing">◌ AI 분석 중</span>
+    <span style="font-size:12px;color:var(--muted)">← 높이 32px(대형) / 리스트에서는 28px</span>
+  </section>
+
+  <h2>4. StatusBadge — 처리 단계 전용</h2>
+  <section class="row">
+    <span class="badge">제보됨</span>
+    <span class="badge b-pending">확인 중</span>
+    <span class="badge b-transfer">기관 전달</span>
+    <span class="badge b-success">보호/반환</span>
+    <span class="badge b-danger">오류·지연</span>
+  </section>
+
+  <h2>5. Button</h2>
+  <p class="sub">높이 44px 이상 · 모서리 12px · Emergency variant는 EmergencyConfirmSheet 내부 전용</p>
+  <section class="row">
+    <button class="btn primary">제보 시작</button>
+    <button class="btn">응급이 아니에요</button>
+    <button class="btn emergency">지금 바로 신고</button>
+    <button class="btn" disabled style="opacity:.45">비활성</button>
+  </section>
+
+  <h2>6. TriageResultCard</h2>
+  <p class="sub">판정은 단정형 금지("응급으로 판단됩니다") · 근거 요약 필수 · 판정 수정 진입점 제공</p>
+  <section>
+    <div class="tri-card" data-state="emergency">
+      <span class="triage lg" data-state="emergency">🚨 응급</span>
+      <p class="tri-basis">뒷다리 절뚝임·움직임 둔화 — 부상 의심으로 응급 판단됩니다.</p>
+      <div class="tri-note">AI 판단이며 담당자가 최종 확인합니다.</div>
+      <div style="margin-top:8px"><a href="#" style="font-size:13px;font-weight:600;color:var(--brand)" onclick="return false">판정이 다른 것 같아요</a></div>
+    </div>
+  </section>
+
+  <h2>7. EmergencyConfirmSheet (배너부)</h2>
+  <p class="sub">solid 응급색 대면적 사용이 허용된 유일한 화면 · 카운트다운 10초+연장 · 중단 버튼 동등 노출</p>
+  <section>
+    <div class="em-banner">🚨 응급 자동 신고</div>
+    <div class="em-under">카운트다운(숫자+진행 바) · [지금 바로 신고] [응급이 아니에요] 두 버튼이 같은 크기·같은 위계로 제공됩니다. 신고 후에는 취소가 아닌 '정정 제보'로 안내합니다.</div>
+  </section>
+
+  <h2>8. AgencyQueueRow</h2>
+  <p class="sub">트리아지 → 시간 → 사건번호(mono) → 썸네일 → 요약 → 처리 상태 · 행 48px · 응급 상단 고정+좌측 액센트</p>
+  <section class="col">
+    <div class="qrow" data-tri="emergency">
+      <span class="triage" data-state="emergency">🚨 응급</span>
+      <span class="mono" style="font-size:12px;color:var(--text3)">11:02</span>
+      <span class="qid mono">JJ-4818</span>
+      <span class="qsum">갈색 소형견 · 단색 · 제주시 노형동</span>
+      <span class="badge b-pending">확인 중</span>
+    </div>
+    <div class="qrow" data-tri="dispatch">
+      <span class="triage" data-state="dispatch">🚗 출동</span>
+      <span class="mono" style="font-size:12px;color:var(--text3)">13:00</span>
+      <span class="qid mono">JJ-4817</span>
+      <span class="qsum">검정 중형견 · 가슴 흰 무늬 · 서귀포시 동홍동</span>
+      <span class="badge b-transfer">기관 전달</span>
+    </div>
+  </section>
+
+  <h2>9. 지도 마커 — 색+형태 이중 구분</h2>
+  <p class="sub">그레이스케일에서도 형태로 구분됩니다 (응급=원 / 출동=사각 / 부정=점 / 종결=체크)</p>
+  <section class="row" style="gap:28px">
+    <div><svg class="mk" width="40" height="40"><circle cx="20" cy="20" r="9" fill="#D32F2F" stroke="#fff" stroke-width="2"/></svg><div class="cap">응급</div></div>
+    <div><svg class="mk" width="40" height="40"><rect x="12" y="12" width="16" height="16" rx="2.5" fill="#E8940A" stroke="#fff" stroke-width="2"/></svg><div class="cap">출동</div></div>
+    <div><svg class="mk" width="40" height="40"><circle cx="20" cy="20" r="5" fill="#8C9590" stroke="#fff" stroke-width="2"/></svg><div class="cap">부정</div></div>
+    <div><svg class="mk" width="40" height="40"><circle cx="20" cy="20" r="9" fill="#167A42" stroke="#fff" stroke-width="2"/><path d="M16.5 20 l2.4 2.6 l4.6 -5.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><div class="cap">종결</div></div>
+    <div><svg class="mk" width="40" height="40"><circle cx="20" cy="20" r="9" fill="#D32F2F" stroke="#fff" stroke-width="2"/><circle cx="20" cy="20" r="14" fill="none" stroke="#B83232" stroke-width="2"/></svg><div class="cap">목표 초과</div></div>
+    <div><svg class="mk" width="52" height="40"><circle cx="26" cy="20" r="16" fill="#E8940A" opacity=".16"/></svg><div class="cap">공개 범위 원</div></div>
+  </section>
+
+  <div class="warn-note">
+    이 페이지는 정적 미리보기입니다. 실제 동작(카운트다운, 권한별 응답, 계측)은
+    <b>mvp-prototype.html</b>에서 확인하세요. 다크 모드는 v2 문서가 라이트 팔레트만
+    정의하므로 제공하지 않습니다.
+  </div>
+</main>
+</body>
+</html>

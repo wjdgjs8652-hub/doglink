@@ -1,0 +1,1734 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>doglink — 유기견 구조 통합 대응 시스템 (MVP 프로토타입)</title>
+<style>
+  :root{
+    /* ═══ doglink 디자인 시스템 v2.0 토큰 — doglink_design_system_v2.md가 SSOT ═══ */
+    /* 배경·표면 */
+    --bg:#F8F9F8; --panel:#FFFFFF; --surface-subtle:#F2F4F2; --surface-muted:#E9EDEA;
+    /* 텍스트 */
+    --ink:#10110E; --muted:#5F6863; --text3:#8C9590; --disabled:#AEB5B1;
+    /* 테두리·구분선 */
+    --line:#D8DDDA; --border-strong:#B8C0BC; --divider:#DDE2DF;
+    /* 브랜드 (doglink Blue) — 파랑=행동 전용 */
+    --brand:#526ED8; --brand-hover:#425BBE; --brand-pressed:#35499D; --brand-soft:#EEF1FC;
+    /* 처리 상태 (StatusBadge 전용) */
+    --warn:#9A5A10; --warn-soft:#FFF3D3; --warn-border:#F2D58A;             /* 확인 중/대기 */
+    --ok:#167A42; --ok-soft:#E8F7EE; --ok-border:#A7DCB9;                   /* 보호/반환 */
+    --transfer:#743A99; --transfer-soft:#F2E8F8; --transfer-border:#D4B5E6; /* 기관 전달 */
+    --danger:#B83232; --danger-soft:#FDECEC; --danger-border:#EAB2B2;       /* 오류·지연 */
+    --neutral:#59615D; --neutral-soft:#EEF0EF; --neutral-border:#D3D8D5;    /* 완료/비활성 */
+    /* ★ AI 트리아지 (TriageBadge 전용 — 처리 상태보다 항상 우선 노출) */
+    --tri-em:#B01E1E; --tri-em-bg:#FDEBEB; --tri-em-border:#E89B9B; --tri-em-solid:#D32F2F;
+    --tri-di:#9A5A10; --tri-di-bg:#FFF3D3; --tri-di-border:#F2D58A; --tri-di-solid:#E8940A;
+    --tri-ne:#59615D; --tri-ne-bg:#EEF0EF; --tri-ne-border:#D3D8D5;
+    --tri-an:#35499D; --tri-an-bg:#EEF1FC; --tri-an-border:#B9C6F0;
+    /* 처리 타임라인 세그먼트 색 = 처리 상태 text 톤 (제보됨→확인 중→기관 전달→보호/반환) */
+    --st1:#59615D; --st2:#9A5A10; --st3:#743A99; --st4:#167A42;
+    /* 모서리·그림자 */
+    --radius-sm:8px; --radius-md:12px; --radius:16px; --radius-xl:20px;
+    --shadow:0 4px 16px rgba(16,17,14,.10);
+    /* 지도 — v2 문서는 라이트 팔레트만 정의하므로 다크 모드는 제거 */
+    --map-sea:#EEF1FC; --map-land:#F2F4F2; --map-hill:#E9EDEA; --map-line:#D8DDDA; --map-ink:#8C9590;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;
+    font-family:Pretendard,SUIT,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    line-height:1.57;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{margin:0;line-height:1.4;font-weight:700;letter-spacing:-.01em}
+  button{font:inherit;color:inherit;cursor:pointer}
+  button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+    outline:2px solid var(--brand);outline-offset:2px}
+  input,textarea,select{font:inherit;color:inherit}
+  .mono{font-family:Pretendard,system-ui,sans-serif;font-variant-numeric:tabular-nums;font-weight:500}
+
+  /* ---------- shell ---------- */
+  header.top{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line)}
+  .top-in{max-width:1120px;margin:0 auto;padding:14px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800}
+  .logo .dot{width:26px;height:26px;border-radius:8px;background:var(--brand);display:grid;place-items:center;color:#fff;font-size:14px}
+  .logo small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:0}
+  nav.tabs{display:flex;gap:4px;margin-left:auto;background:var(--bg);padding:4px;border-radius:11px;border:1px solid var(--line);flex-wrap:wrap}
+  nav.tabs button{border:0;background:transparent;padding:8px 13px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--muted)}
+  nav.tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+  nav.tabs button .n{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;
+    background:var(--line);color:var(--muted);font-size:10.5px;margin-right:6px;vertical-align:1px}
+  nav.tabs button[aria-selected="true"] .n{background:var(--brand);color:#fff}
+
+  /* ---------- 권한 바 ---------- */
+  .rolebar{border-top:1px solid var(--line);background:var(--bg)}
+  .rb-in{max-width:1120px;margin:0 auto;padding:9px 20px;display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+  .rb-lab{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+  .rb-note{font-size:11.5px;color:var(--muted);flex:1;min-width:200px}
+  .rb-btns{display:flex;gap:6px}
+  .demo-warn{background:var(--warn-soft);color:var(--warn);font-size:11.5px;line-height:1.5;
+    border-top:1px solid var(--line)}
+  .demo-warn{padding:8px 20px}
+  @media(min-width:760px){ .demo-warn{padding:8px calc((100vw - 1120px)/2 + 20px)} }
+
+  .modal[hidden]{display:none}
+  .modal{position:fixed;inset:0;z-index:80;background:rgba(10,14,20,.55);display:grid;place-items:center;padding:20px}
+  .modal-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    max-width:760px;width:100%;max-height:82vh;display:flex;flex-direction:column}
+  .modal-head{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+    align-items:center;gap:10px;font-size:14px}
+  .modal-body{padding:16px;overflow:auto}
+  pre.payload{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;
+    font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.6;overflow:auto;margin:0;white-space:pre-wrap}
+  pre.payload .k{color:var(--brand)}
+  pre.payload .gone{color:var(--danger);text-decoration:line-through;opacity:.75}
+  table.perm{width:100%;border-collapse:collapse;font-size:12px}
+  table.perm th,table.perm td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  table.perm th{font-size:11px;color:var(--muted)}
+  table.perm td.y{color:var(--ok);font-weight:600}
+  table.perm td.n{color:var(--danger)}
+  table.perm td.p{color:var(--warn)}
+
+  main{max-width:1120px;margin:0 auto;padding:22px 20px 80px}
+  .screen{display:none;animation:fade .25s ease}
+  .screen.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .feature-head{margin-bottom:18px}
+  .feature-head .kicker{font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--brand);text-transform:uppercase}
+  .feature-head h2{font-size:22px;margin:5px 0 6px}
+  .feature-head p{margin:0;color:var(--muted);font-size:14px;max-width:64ch}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+  .card-pad{padding:18px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:900px){ .cols-2{grid-template-columns:minmax(0,380px) minmax(0,1fr)} .cols-2b{grid-template-columns:minmax(0,1fr) minmax(0,420px)} }
+
+  .sec-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em;margin-bottom:10px;
+    display:flex;align-items:center;gap:8px}
+  .sec-title::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  label.f{display:block;margin-bottom:13px}
+  label.f > span{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px}
+  label.f > span em{font-style:normal;color:var(--danger);margin-left:3px}
+  .inp{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg)}
+  .inp:focus{outline:2px solid var(--brand);outline-offset:-1px;background:var(--panel)}
+  textarea.inp{min-height:82px;resize:vertical}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+  .btn{border:1px solid var(--line);background:var(--panel);padding:11px 16px;border-radius:var(--radius-md);
+    font-size:14px;font-weight:600;min-height:44px;line-height:20px}
+  .btn:hover{border-color:var(--brand);color:var(--brand)}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:var(--brand-hover);border-color:var(--brand-hover);color:#fff}
+  .btn.primary:active{background:var(--brand-pressed);border-color:var(--brand-pressed)}
+  /* Emergency variant — EmergencyConfirmSheet 내부에서만 사용 */
+  .btn.emergency{background:var(--tri-em-solid);border-color:var(--tri-em-solid);color:#fff}
+  .btn.emergency:hover{filter:brightness(.94);color:#fff}
+  .btn.sm{padding:6px 12px;font-size:13px;border-radius:var(--radius-sm);min-height:32px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ── StatusBadge — 처리 단계 전용. 트리아지는 반드시 TriageBadge 사용 ── */
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;
+    padding:3px 12px;border-radius:999px;border:1px solid var(--neutral-border);
+    background:var(--neutral-soft);color:var(--neutral);white-space:nowrap;line-height:18px}
+  .b-1{background:var(--neutral-soft);color:var(--neutral);border-color:var(--neutral-border)}
+  .b-2{background:var(--warn-soft);color:var(--warn);border-color:var(--warn-border)}
+  .b-3{background:var(--transfer-soft);color:var(--transfer);border-color:var(--transfer-border)}
+  .b-4{background:var(--ok-soft);color:var(--ok);border-color:var(--ok-border)}
+  /* 배지 앞 점이 상태 정체성을 나르므로 색만으로 구분되지 않는다 */
+  .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+  .badge.plain::before{display:none}
+
+  /* ── ★ TriageBadge — AI 판정 전용. 아이콘+한글 라벨+색 3요소 생략 불가 ── */
+  .triage{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 12px;
+    border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;border:1px solid}
+  .triage.lg{height:32px;font-size:14px}
+  .triage[data-state="emergency"]{background:var(--tri-em-bg);color:var(--tri-em);border-color:var(--tri-em-border)}
+  .triage[data-state="dispatch"]{background:var(--tri-di-bg);color:var(--tri-di);border-color:var(--tri-di-border)}
+  .triage[data-state="negative"]{background:var(--tri-ne-bg);color:var(--tri-ne);border-color:var(--tri-ne-border)}
+  .triage[data-state="analyzing"]{background:var(--tri-an-bg);color:var(--tri-an);border-color:var(--tri-an-border)}
+  .triage[data-state="analyzing"] .ti{animation:tpulse 1.2s ease-in-out infinite}
+  @keyframes tpulse{50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){ .triage[data-state="analyzing"] .ti{animation:none} }
+
+  /* ---------- 1. QR ---------- */
+  .qr-stage{display:grid;gap:16px;place-items:center;padding:26px 18px;text-align:center}
+  .poster{width:230px;border-radius:14px;border:1px solid var(--line);background:var(--panel);
+    padding:16px;box-shadow:var(--shadow);text-align:center}
+  .poster h3{font-size:15px;margin-bottom:3px}
+  .poster p{font-size:11.5px;color:var(--muted);margin:0 0 12px}
+  .qr{width:132px;height:132px;margin:0 auto;image-rendering:pixelated;border:6px solid #fff;border-radius:6px;background:#fff}
+  @media (prefers-color-scheme:dark){ .qr{border-color:#fff} }
+  .poster .cta{margin-top:11px;font-size:11.5px;font-weight:700;color:var(--brand)}
+
+  .phone{width:100%;max-width:390px;margin:0 auto;border:1px solid var(--line);border-radius:22px;
+    background:var(--panel);box-shadow:var(--shadow);overflow:hidden;position:relative}
+  .phone-bar{padding:9px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;
+    font-size:11.5px;color:var(--muted);background:var(--bg)}
+  .phone-bar .url{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 10px;
+    font-family:ui-monospace,Menlo,monospace;font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .phone-body{padding:16px;max-height:none}
+  .steps{display:flex;gap:6px;margin-bottom:14px}
+  .steps i{flex:1;height:3px;border-radius:2px;background:var(--line)}
+  .steps i.on{background:var(--brand)}
+  .timer{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);
+    display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-bottom:8px}
+  .timer b{color:var(--ok)}
+  .timer.over b{color:var(--danger)}
+
+  .photo-pick{display:flex;gap:8px;flex-wrap:wrap}
+  .photo-pick button{width:62px;height:62px;border-radius:10px;border:2px solid var(--line);
+    overflow:hidden;padding:0;background:var(--bg)}
+  .photo-pick button[aria-pressed="true"]{border-color:var(--brand)}
+  .photo-pick svg{width:100%;height:100%;display:block}
+  .photo-preview{border:1px solid var(--line);border-radius:var(--radius-md);padding:10px;display:flex;gap:11px;align-items:center;background:var(--bg)}
+  .photo-preview .thumb{width:66px;height:66px;border-radius:9px;overflow:hidden;flex:none;background:var(--panel)}
+  .photo-preview .thumb svg,.photo-preview .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+  .ai-card{border:1px solid var(--brand);background:var(--brand-soft);border-radius:12px;padding:14px;margin-bottom:12px}
+  .ai-card h4{font-size:13px;display:flex;align-items:center;gap:7px;margin-bottom:11px}
+  .kv{display:grid;grid-template-columns:78px minmax(0,1fr);gap:7px 10px;font-size:13px;align-items:center}
+  .kv dt{color:var(--muted);font-size:12px}
+  .kv dd{margin:0}
+  .kv .edit{width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--panel);font-size:12.5px}
+  .notice{border-radius:10px;padding:9px 11px;font-size:12.5px;margin-bottom:9px;display:flex;gap:8px}
+  .notice.warn{background:var(--warn-soft);color:var(--warn)}
+  .notice.ok{background:var(--ok-soft);color:var(--ok)}
+  /* ── ★ TriageResultCard — 제보 플로우의 감정적 정점 ── */
+  .tri-card{border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:var(--panel)}
+  .tri-card[data-state="emergency"]{border:1.5px solid var(--tri-em-border);
+    border-left:4px solid var(--tri-em-solid)}     /* 응급 카드 좌측 액센트 바 (문서 §5) */
+  .tri-card .tri-top{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+  .tri-card .tri-thumb{width:56px;height:56px;border-radius:var(--radius-md);overflow:hidden;flex:none;background:var(--surface-subtle)}
+  .tri-card .tri-thumb svg{width:100%;height:100%;display:block}
+  .tri-basis{font-size:14px;line-height:22px;color:var(--ink);margin:0 0 8px}
+  .tri-note{font-size:12px;line-height:18px;color:var(--muted)}
+  .tri-fix{background:none;border:0;padding:6px 0;font-size:13px;font-weight:600;color:var(--brand);
+    text-decoration:underline;text-underline-offset:3px;min-height:32px}
+
+  /* ── ★ EmergencyConfirmSheet — Critical Action 바텀시트 ── */
+  .em-dim{position:absolute;inset:0;background:rgba(16,17,14,.45);z-index:5;display:flex;align-items:flex-end}
+  .em-sheet{background:var(--panel);border-radius:var(--radius-xl) var(--radius-xl) 0 0;width:100%;
+    max-height:96%;overflow:auto;box-shadow:0 -6px 24px rgba(16,17,14,.18)}
+  .em-banner{background:var(--tri-em-solid);color:#fff;padding:16px 20px;
+    font-size:24px;line-height:32px;font-weight:700;display:flex;gap:10px;align-items:center}
+  .em-body{padding:16px 20px 20px}
+  .em-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--divider);font-size:14px;line-height:22px}
+  .em-row:last-of-type{border-bottom:0}
+  .em-row dt{width:64px;flex:none;color:var(--muted);font-size:13px}
+  .em-row dd{margin:0;flex:1}
+  .em-count{display:flex;align-items:center;gap:10px;margin:12px 0 4px;font-size:14px;font-weight:600}
+  .em-count b{font-size:20px;font-variant-numeric:tabular-nums;color:var(--tri-em)}
+  .em-bar{flex:1;height:6px;border-radius:3px;background:var(--surface-muted);overflow:hidden}
+  .em-bar i{display:block;height:100%;background:var(--tri-em-solid);border-radius:3px;transition:width .25s linear}
+  .em-actions{display:grid;gap:8px;margin-top:14px}
+  .em-actions .btn{width:100%}
+
+  .receipt{text-align:center;padding:22px 10px}
+  .receipt .no{font-family:ui-monospace,Menlo,monospace;font-size:23px;font-weight:800;letter-spacing:.04em;margin:8px 0 4px}
+  .thinking{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);padding:16px 0}
+  .spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* ---------- 2. map ---------- */
+  .map-wrap{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--map-sea)}
+  .map-wrap svg{display:block;width:100%;height:auto}
+  /* 마커 = 트리아지 색 + 형태 이중 구분 (응급=원, 출동=사각, 부정=작은 점).
+     solid 응급색은 지도 응급 마커에 허용된 3곳 중 하나다. */
+  .marker{cursor:pointer}
+  .marker .halo{opacity:.16}
+  .marker.sel .halo{opacity:.32}
+  .marker .pin{stroke:var(--panel);stroke-width:2}
+  .marker[data-tri="emergency"] .pin,.marker[data-tri="emergency"] .halo{fill:var(--tri-em-solid)}
+  .marker[data-tri="dispatch"]  .pin,.marker[data-tri="dispatch"]  .halo{fill:var(--tri-di-solid)}
+  .marker[data-tri="negative"]  .pin,.marker[data-tri="negative"]  .halo{fill:var(--text3)}
+  .marker .done{fill:var(--ok);stroke:var(--panel);stroke-width:2}    /* 종결 건(기관 화면) */
+  .marker .late{fill:none;stroke:var(--danger);stroke-width:2}        /* 지연 — 실선 (점선 금지) */
+  .map-legend{position:absolute;left:10px;bottom:10px;background:var(--panel);border:1px solid var(--line);
+    border-radius:9px;padding:7px 10px;font-size:11px;display:grid;gap:3px;box-shadow:var(--shadow)}
+  .map-legend i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+  .map-legend i.ring{background:none;border:2px solid var(--danger);width:10px;height:10px;vertical-align:-2px}
+  .map-legend i.sq{border-radius:2px}
+  .map-legend i.dotless{width:6px;height:6px;vertical-align:0}
+  .privacy-note{position:absolute;right:10px;top:10px;background:var(--panel);border:1px solid var(--line);
+    border-radius:9px;padding:6px 10px;font-size:11px;color:var(--muted);box-shadow:var(--shadow)}
+
+  /* ---------- 처리시간 계측 ---------- */
+  .kpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:6px}
+  @media(min-width:760px){ .kpi{grid-template-columns:repeat(5,minmax(0,1fr))} }
+  .tile{border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:var(--panel)}
+  .tile .lab{font-size:11.5px;color:var(--muted);margin-bottom:3px}
+  .tile .val{font-size:23px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+  .tile .val small{font-size:12.5px;font-weight:600;color:var(--muted);margin-left:2px}
+  .tile .sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .tile .val.na{font-size:15px;color:var(--muted);font-weight:600}
+
+  .sla{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;
+    padding:2px 7px;border-radius:999px;white-space:nowrap}
+  .sla-ok{background:var(--ok-soft);color:var(--ok)}
+  .sla-warn{background:var(--warn-soft);color:var(--warn)}
+  .sla-late{background:var(--danger-soft);color:var(--danger)}
+
+  .tl{display:flex;gap:2px;height:18px;margin:9px 0 7px}   /* 2px 표면 간격 */
+  .tl span{position:relative;overflow:visible;min-width:3px}
+  .tl span:first-child{border-radius:4px 0 0 4px}
+  .tl span:last-child{border-radius:0 4px 4px 0}
+  .tl span:only-child{border-radius:4px}
+  .tl .g1{background:var(--st1)} .tl .g2{background:var(--st2)} .tl .g3{background:var(--st3)}
+  .tl .open{background:repeating-linear-gradient(135deg,var(--border-strong) 0 5px,var(--surface-subtle) 5px 10px);
+    border:1px solid var(--border-strong);border-radius:0 4px 4px 0}   /* 진행 중 — 빗금+실선 (점선 금지) */
+  .tl-lab{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--muted)}
+  .tl-lab span i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:5px}
+  .tl-lab b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .measure-note{font-size:11px;color:var(--muted);border-left:3px solid var(--brand);
+    padding-left:9px;margin:10px 0 0;line-height:1.5}
+
+  /* ---------- 목격 이력 / 안내 문구 ---------- */
+  .guide{font-size:12px;border-radius:10px;padding:9px 11px;margin-bottom:12px;line-height:1.55}
+  .guide.pub{background:var(--brand-soft);color:var(--brand)}
+  .guide.agc{background:var(--warn-soft);color:var(--warn)}
+  .hist{list-style:none;margin:8px 0 0;padding:0;font-size:12.5px}
+  .hist li{position:relative;padding:0 0 9px 16px;border-left:1px solid var(--line);margin-left:4px}
+  .hist li:last-child{border-left-color:transparent;padding-bottom:0}
+  .hist li::before{content:"";position:absolute;left:-4.5px;top:5px;width:8px;height:8px;border-radius:50%;
+    background:var(--st1);border:2px solid var(--panel)}
+  .hist li.first::before{background:var(--muted)}
+  .hist time{color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-size:11.5px;margin-right:7px}
+  .redact{background:repeating-linear-gradient(135deg,var(--line) 0 4px,transparent 4px 8px);
+    border-radius:4px;padding:1px 8px;color:var(--muted);font-size:11.5px}
+  .reveal-form{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:9px}
+
+  .list{display:grid;gap:9px;max-height:520px;overflow:auto;padding-right:2px}
+  .item{border:1px solid var(--line);border-radius:var(--radius-md);padding:12px;background:var(--panel);cursor:pointer;text-align:left;width:100%}
+  .item:hover{border-color:var(--brand)}
+  .item[aria-current="true"]{border-color:var(--brand);background:var(--brand-soft)}
+  .item .row1{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px}
+  .item .sum{font-size:14px;font-weight:600}
+  .item .meta{font-size:12px;color:var(--muted);display:flex;gap:9px;flex-wrap:wrap}
+
+  /* ── ★ AgencyQueueRow — 기관 큐 (밀도 높은 행, 응급 상단 고정) ── */
+  .queue{display:grid;gap:4px;max-height:260px;overflow:auto;padding-right:2px;margin-bottom:16px}
+  .qrow{display:flex;gap:10px;align-items:center;min-height:48px;padding:6px 12px;width:100%;
+    border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel);cursor:pointer;text-align:left}
+  .qrow:hover{border-color:var(--brand)}
+  .qrow[aria-current="true"]{border-color:var(--brand);background:var(--brand-soft)}
+  .qrow[data-tri="emergency"]{border-left:4px solid var(--tri-em-solid)}
+  .qrow .qth{width:32px;height:32px;border-radius:6px;overflow:hidden;flex:none;background:var(--surface-subtle)}
+  .qrow .qth svg{width:100%;height:100%;display:block}
+  .qrow .qid{font-variant-numeric:tabular-nums;font-size:13px;font-weight:500;color:var(--muted);flex:none}
+  .qrow .qtime{font-variant-numeric:tabular-nums;font-size:12px;color:var(--text3);flex:none;width:44px}
+  .qrow .qsum{flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:11px;flex-wrap:wrap}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{border:0;background:var(--panel);padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .seg button[aria-pressed="true"]{background:var(--brand);color:#fff}
+
+  .flow{display:flex;align-items:center;gap:0;margin:12px 0 4px;flex-wrap:wrap}
+  .flow .st{flex:1;min-width:66px;text-align:center;font-size:10.5px;color:var(--muted);position:relative;padding-top:16px}
+  .flow .st::before{content:"";position:absolute;top:4px;left:50%;transform:translateX(-50%);
+    width:9px;height:9px;border-radius:50%;background:var(--line)}
+  .flow .st::after{content:"";position:absolute;top:8px;left:50%;width:100%;height:1px;background:var(--line)}
+  .flow .st:last-child::after{display:none}
+  .flow .st.done{color:var(--ink);font-weight:600}
+  .flow .st.done::before{background:var(--brand)}
+  .flow .st.done::after{background:var(--brand)}
+
+  /* ---------- 3. match ---------- */
+  .cand{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--panel)}
+  .cand.decided{opacity:.55}
+  .cand .top{display:flex;gap:11px;align-items:flex-start}
+  .cand .th{width:56px;height:56px;border-radius:9px;overflow:hidden;flex:none;background:var(--bg)}
+  .cand .th svg{width:100%;height:100%;display:block}
+  .score{display:flex;align-items:center;gap:7px;margin:9px 0 7px}
+  .bar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--brand);border-radius:3px}
+  .score b{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+  .reasons{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+  .reasons span{font-size:11px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--muted)}
+  .reasons span.hit{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+  .decision{font-size:12px;font-weight:700;padding:7px 10px;border-radius:8px;background:var(--bg);color:var(--muted)}
+  .human-note{font-size:11.5px;color:var(--muted);border-left:3px solid var(--warn);padding-left:9px;margin-top:10px}
+  table.log{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.log th,table.log td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  table.log th{font-size:11px;color:var(--muted);font-weight:600}
+  .empty{color:var(--muted);font-size:12.5px;padding:14px 0;text-align:center}
+
+  footer{max-width:1120px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:11.5px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;
+    pointer-events:none;transition:.25s;z-index:60}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo">
+      <span class="dot">🐕</span>
+      <span>doglink
+        <small>유기견 구조 통합 대응 시스템 · 팀 성냥팔아요 · 2026 제주 창업 캠프 MVP</small></span>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="t1" aria-selected="true"  data-s="s1"><span class="n">1</span>QR 무설치 제보</button>
+      <button role="tab" id="t2" aria-selected="false" data-s="s2"><span class="n">2</span>제보 지도·상태</button>
+      <button role="tab" id="t3" aria-selected="false" data-s="s3"><span class="n">3</span>중복·실종 매칭</button>
+    </nav>
+  </div>
+  <div class="rolebar">
+    <div class="rb-in">
+      <span class="rb-lab">접속 권한</span>
+      <div class="seg" id="roleToggle">
+        <button data-r="public" aria-pressed="true">일반 시민</button>
+        <button data-r="owner"  aria-pressed="false">제보자 본인</button>
+        <button data-r="agency" aria-pressed="false">기관 담당자</button>
+      </div>
+      <span class="rb-note" id="roleNote"></span>
+      <div class="rb-btns">
+        <button class="btn sm" id="showPayload">이 권한이 받는 데이터</button>
+        <button class="btn sm" id="showPerm">권한표</button>
+      </div>
+    </div>
+  </div>
+  <div class="demo-warn">
+    <b>현재 권한 전환은 시연을 위한 UI입니다.</b>
+    실제 서비스에서는 시민용 서비스와 기관용 관리자 시스템을 분리하고, 서버 권한 검증을 통해
+    정확한 좌표가 일반 사용자에게 <b>전송되지 않도록</b> 설계합니다.
+  </div>
+</header>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head"><b id="modalTitle"></b><button class="btn sm" id="modalX">닫기</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<main>
+
+<!-- ══════════════ 1. CORE ══════════════ -->
+<section class="screen on" id="s1" role="tabpanel" aria-labelledby="t1">
+  <div class="feature-head">
+    <div class="kicker">Core 기능</div>
+    <h2>QR 기반 AI 보조 무설치 제보</h2>
+    <p>발견 시민이 웹 포스터의 QR을 스캔해 <strong>설치·가입 없이</strong> 사진·위치·목격 내용을 제출하면,
+       AI가 표준 제보 카드로 정리하고 시민이 수정·확정한 뒤 접수번호를 받습니다.
+       완료 기준은 <strong>QR 진입 → 제출 → AI 확정 → 접수번호</strong>를 1분 이내에 마치는 것입니다.</p>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card card-pad">
+      <div class="sec-title">① 웹 홍보 포스터</div>
+      <div class="qr-stage">
+        <div class="poster">
+          <h3>혼자 있는 개를 보셨나요?</h3>
+          <p>설치도 가입도 없이 30초 제보</p>
+          <canvas class="qr" id="qr" width="33" height="33"></canvas>
+          <div class="cta">▲ 카메라로 스캔</div>
+        </div>
+        <button class="btn primary" id="scan">📷 QR 스캔하기 (시연)</button>
+        <div class="hint">스캔하는 순간 타이머가 시작됩니다.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-pad" style="padding-bottom:0">
+        <div class="sec-title">② 무설치 모바일 제보 화면</div>
+      </div>
+      <div class="card-pad" style="padding-top:8px">
+        <div class="phone">
+          <div class="phone-bar">
+            <span>🔒</span><span class="url">jeju-dog.kr/r/JJ-4821</span><span>무설치</span>
+          </div>
+          <div class="phone-body" id="phone">
+            <!-- injected -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 2. SUPPORTING 1 ══════════════ -->
+<section class="screen" id="s2" role="tabpanel" aria-labelledby="t2">
+  <div class="feature-head">
+    <div class="kicker">Supporting 기능 1</div>
+    <h2>제보 지도 및 처리 상태 확인</h2>
+    <p>접수된 제보를 지도·목록에 표시하고 최근순·거리순으로 확인합니다.
+       공개 권한에는 정확한 좌표를 <strong>화면에서 가리는 것이 아니라 응답에서 제거</strong>하고
+       위험도에 따라 범위를 넓혀 내려줍니다. 상태는 제보됨 → 확인 중 → 기관 전달 → 보호/반환 순으로 갱신되며,
+       각 단계에 <strong>머문 시간을 함께 계측</strong>해 어디서 지연되는지 드러냅니다.</p>
+  </div>
+
+  <div id="opsMetrics" hidden>
+    <div class="kpi" id="kpi"></div>
+    <div class="measure-note" style="margin:0 0 16px">
+      <b>이 수치는 기존 통계가 아니라 본 서비스가 수집하는 계측값입니다.</b>
+      근거자료 <code>Regional issues report.txt</code> 12-2절은 “신고 후 담당자 확인·출동까지 걸리는 평균 시간”을
+      <b>아직 확인되지 않은 항목</b>으로 분류하고, 12-4절은 이를 개발 전 확인해야 할 핵심 지표로 지목합니다.
+      목표 시간(확인 30분 · 전달 2시간 · 종결 24시간)은 기관 협의 전 <b>시연용 가정치</b>입니다.
+      운영 지표이므로 <b>일반 시민 화면에는 노출하지 않습니다.</b>
+    </div>
+  </div>
+  <div id="myStatus"></div>
+
+  <div class="grid cols-2b">
+    <div class="card card-pad">
+      <div class="toolbar">
+        <div class="sec-title" style="margin:0;flex:1">최근 목격 지도</div>
+      </div>
+      <div class="guide" id="mapGuide"></div>
+      <div class="map-wrap">
+        <svg id="map" viewBox="0 0 720 380" role="img" aria-label="제주도 제보 지도">
+          <defs>
+            <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+          </defs>
+          <!-- 제주 본섬 단순 실루엣 -->
+          <path d="M96 208 C118 158,176 122,252 106 C330 90,430 88,510 104 C580 118,632 148,650 190
+                   C664 224,646 258,600 278 C540 304,452 316,364 316 C272 316,182 300,126 272 C92 254,84 230,96 208 Z"
+                fill="var(--map-land)" stroke="var(--map-line)" stroke-width="1.5"/>
+          <ellipse cx="372" cy="196" rx="52" ry="30" fill="var(--map-hill)"/>
+          <text x="372" y="200" text-anchor="middle" font-size="11" fill="var(--map-ink)">한라산</text>
+          <text x="200" y="150" font-size="11.5" fill="var(--map-ink)">제주시</text>
+          <text x="470" y="292" font-size="11.5" fill="var(--map-ink)">서귀포시</text>
+          <text x="588" y="160" font-size="11.5" fill="var(--map-ink)">구좌·성산</text>
+          <text x="146" y="262" font-size="11.5" fill="var(--map-ink)">애월·한림</text>
+          <g id="markers"></g>
+        </svg>
+        <div class="privacy-note" id="privacyNote"></div>
+        <div class="map-legend" aria-label="지도 범례 — AI 판정별 마커">
+          <div><i style="background:var(--tri-em-solid)"></i>🚨 응급 (원형)</div>
+          <div><i class="sq" style="background:var(--tri-di-solid)"></i>🚗 출동 (사각)</div>
+          <div><i class="dotless" style="background:var(--text3)"></i>부정 (점)</div>
+          <div><i style="background:var(--ok)"></i>✓ 종결</div>
+          <div style="border-top:1px solid var(--divider);margin-top:2px;padding-top:3px">
+            <i class="ring"></i>목표 시간 초과</div>
+        </div>
+      </div>
+      <div id="detail" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="toolbar">
+        <div class="sec-title" style="margin:0;flex:1">제보 목록 <span id="count" style="color:var(--muted);font-weight:600"></span></div>
+        <div class="seg" id="sortToggle">
+          <button data-k="recent" aria-pressed="true">최근순</button>
+          <button data-k="dist" aria-pressed="false">거리순</button>
+        </div>
+      </div>
+      <div class="hint" style="margin:-4px 0 10px" id="distNote"></div>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 3. SUPPORTING 2 ══════════════ -->
+<section class="screen" id="s3" role="tabpanel" aria-labelledby="t3">
+  <div class="feature-head">
+    <div class="kicker">Supporting 기능 2</div>
+    <h2>실종·목격 및 중복 제보 후보 매칭 <span class="badge b-2">운영자 전용</span></h2>
+    <p>신규 제보를 기존 실종 신고·인근 제보와 비교해 같은 개체일 가능성이 높은 후보를 <strong>최대 3건</strong> 제시합니다.
+       AI는 확정하지 않고 근거와 참고 점수만 제공하며, <strong>연결·중복 병합·무관</strong>은 사람이 결정합니다.</p>
+  </div>
+
+  <div id="agencyGate" class="card card-pad" hidden>
+    <div class="empty" style="padding:30px 12px">
+      🔒 이 화면은 <b>인증된 공공기관·보호소 담당자</b> 전용입니다.<br>
+      상단 <b>접속 권한</b>을 “기관 담당자”로 바꾸면 시연용으로 열람할 수 있습니다.
+      <div class="hint" style="margin-top:10px">
+        실제 서비스에서는 공식 이메일·서류 인증 → 관리자 승인 → 2단계 인증을 거친 계정만 접근하며,
+        담당 지역·담당 사건으로 열람 범위가 제한됩니다.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid cols-2b" id="agencyBody">
+    <div class="card card-pad">
+      <div class="sec-title">제보 큐 <span class="hint" style="margin:0;font-weight:500">응급 상단 고정 · ↑↓/Enter 탐색</span></div>
+      <div class="queue" id="newList" role="listbox" aria-label="제보 큐"></div>
+      <div class="sec-title">AI 유사 후보 (최대 3건)</div>
+      <div class="guide agc" style="margin-bottom:11px">
+        AI 후보는 참고 정보입니다. 동일 개체 여부는 담당자가 원본 사진, 위치, 시간과 현장 상황을 확인한 뒤 결정합니다.
+      </div>
+      <div id="cands"></div>
+    </div>
+
+    <div>
+      <div class="card card-pad" style="margin-bottom:16px">
+        <div class="sec-title">운영자 처리 상태 변경</div>
+        <div id="statusPanel"><div class="empty">왼쪽에서 제보를 선택하세요.</div></div>
+      </div>
+      <div class="card card-pad" style="margin-bottom:16px">
+        <div class="sec-title">처리 로그 <span class="hint" style="margin:0;font-weight:500">변경 전·후 기록</span></div>
+        <table class="log"><tbody id="log"><tr><td class="empty" colspan="3">아직 처리 이력이 없습니다.</td></tr></tbody></table>
+      </div>
+      <div class="card card-pad">
+        <div class="sec-title">위치 열람 기록</div>
+        <div class="hint" style="margin:-4px 0 8px">
+          정확한 위치정보는 담당 사건의 구조·보호 업무에만 사용해야 하며, 모든 열람 기록이 저장됩니다.
+        </div>
+        <table class="log"><tbody id="access"><tr><td class="empty" colspan="3">열람 기록이 없습니다.</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  시연 프로토타입 · 모든 데이터는 브라우저 메모리에만 저장되며 실제 신고로 접수되지 않습니다.
+  AI 결과는 시연용 규칙 기반 모의 응답입니다.
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+"use strict";
+
+/* ══════════ 공통 ══════════ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const STATUS = ["제보됨","확인 중","기관 전달","보호/반환"];
+const badge = i => `<span class="badge b-${i+1}">${STATUS[i]}</span>`;
+const pad = n => String(n).padStart(2,"0");
+const hhmm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const hhmmss = d => `${hhmm(d)}:${pad(d.getSeconds())}`;
+
+/* ★ AI 트리아지 — 처리 상태(STATUS)와 별개 차원. TriageBadge로만 표현한다. */
+const TRIAGE = {
+  emergency: { icon:"🚨", label:"응급",     order:0 },
+  dispatch:  { icon:"🚗", label:"출동",     order:1 },
+  negative:  { icon:"✓",  label:"부정",     order:2 },
+  analyzing: { icon:"◌",  label:"AI 분석 중", order:3 },
+};
+const triageBadge = (t, lg=false) => {
+  const m = TRIAGE[t] || TRIAGE.analyzing;
+  return `<span class="triage${lg?" lg":""}" data-state="${t}"><span class="ti">${m.icon}</span>${m.label}</span>`;
+};
+
+let toastT;
+function toast(msg){
+  const el = $("#toast"); el.textContent = msg; el.classList.add("on");
+  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove("on"), 2200);
+}
+
+/* 시연용 강아지 썸네일 (외부 리소스 없음) */
+function dogSVG(coat, patt){
+  const C = {검정:"#3b3f46", 갈색:"#8a5a34", 흰색:"#e7e3dc", 베이지:"#d3b78e", 회색:"#8b9099"}[coat] || "#a0784f";
+  const spot = patt.includes("얼룩") || patt.includes("점");
+  return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <rect width="64" height="64" fill="#cfe3f5"/>
+    <rect y="44" width="64" height="20" fill="#b9cfe0"/>
+    <ellipse cx="30" cy="42" rx="17" ry="10" fill="${C}"/>
+    <circle cx="46" cy="30" r="10" fill="${C}"/>
+    <ellipse cx="52" cy="32" rx="6" ry="4" fill="${C}"/>
+    <path d="M40 22 l-3 -9 l9 4 z" fill="${C}"/>
+    <circle cx="49" cy="28" r="1.6" fill="#1b1d21"/>
+    <circle cx="56" cy="32" r="1.4" fill="#1b1d21"/>
+    <path d="M15 40 q-8 -6 -6 -13" stroke="${C}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <rect x="22" y="49" width="4" height="9" rx="2" fill="${C}"/>
+    <rect x="34" y="49" width="4" height="9" rx="2" fill="${C}"/>
+    ${spot ? `<circle cx="26" cy="40" r="4" fill="#ffffff" opacity=".55"/>
+              <circle cx="36" cy="45" r="2.6" fill="#ffffff" opacity=".45"/>` : ""}
+  </svg>`;
+}
+
+/* ══════════ 데이터 ══════════ */
+const ME = {x:236, y:150};              // 현재 위치(제주시청) — 지도 좌표계
+const now = new Date();
+const ago = m => new Date(now.getTime() - m*60000);
+
+let seq = 4821;
+/* stamps[i] = 상태 i에 진입한 시각. null이면 아직 도달하지 않은 단계.
+   stamps[0]은 항상 제보 접수 시각(= t)이다. */
+const reports = [
+  { id:"JJ-4817", kind:"제보", coat:"검정", size:"중형견", patt:"가슴 흰 무늬", injury:"없음",
+    dir:"동쪽 도로변", place:"서귀포 ○○공원 인근", area:"서귀포시 동홍동", x:470, y:282, t:ago(38), status:2,
+    collar:"빨간 목줄", risk:"normal", triage:"dispatch", triBasis:"단독 배회, 외상 징후 없음 — 구조 출동 대상으로 판단됩니다.",
+    stamps:[ago(38), ago(26), ago(9), null],
+    reporter:{ name:"이○연", phone:"010-****-3172", contactOk:true },
+    assignee:"서귀포시 동물보호팀 김주무관", memo:"공원 관리사무소에 임시 대기 요청함.",
+    sightings:[ {t:ago(38), place:"서귀포 ○○공원 정문", by:"최초 제보"},
+                {t:ago(17), place:"공원 동쪽 도로변", by:"추가 목격"} ] },
+  { id:"JJ-4818", kind:"제보", coat:"갈색", size:"소형견", patt:"단색", injury:"뒷다리 절뚝임",
+    dir:"골목 안쪽", place:"제주시 노형동 주택가", area:"제주시 노형동", x:214, y:168, t:ago(95), status:1,
+    collar:"없음", risk:"urgent", mine:true, triage:"emergency",
+    triBasis:"뒷다리 절뚝임·움직임 둔화 — 부상 의심으로 응급 판단됩니다.",
+    stamps:[ago(95), ago(21), null, null],
+    reporter:{ name:"강○민", phone:"010-****-8840", contactOk:true },
+    assignee:"제주시 동물복지과 박주무관", memo:"부상 의심 — 포획 인력 배정 대기 중.",
+    sightings:[ {t:ago(95), place:"노형동 ○○빌라 앞 골목", by:"최초 제보"} ] },
+  { id:"JJ-4819", kind:"제보", coat:"흰색", size:"중형견", patt:"등쪽 갈색 얼룩", injury:"없음",
+    dir:"해안도로 서쪽", place:"애월읍 해안도로 인근", area:"제주시 애월읍", x:150, y:236, t:ago(210), status:3,
+    collar:"파란 목줄", risk:"resident", triage:"dispatch", triBasis:"목줄 착용 배회 — 유실견 가능성, 출동 대상으로 판단됩니다.",
+    stamps:[ago(210), ago(196), ago(150), ago(44)],
+    reporter:{ name:"고○수", phone:"010-****-2201", contactOk:false },
+    assignee:"제주동물보호센터 이주무관", memo:"보호자 확인 후 반환 완료. 동물등록 미등록 상태였음.",
+    sightings:[ {t:ago(210), place:"애월읍 해안도로 버스정류장", by:"최초 제보"},
+                {t:ago(160), place:"해안도로 서쪽 200m", by:"추가 목격"} ] },
+  { id:"JJ-4820", kind:"제보", coat:"검정", size:"중형견", patt:"가슴 흰 점", injury:"없음",
+    dir:"주차장 방향", place:"성산읍 ○○리 마을회관 인근", area:"서귀포시 성산읍", x:598, y:172, t:ago(320), status:0,
+    collar:"빨간 목줄", risk:"normal", triage:"dispatch", triBasis:"단독 배회, 외상 징후 없음 — 구조 출동 대상으로 판단됩니다.",
+    stamps:[ago(320), null, null, null],
+    reporter:{ name:"부○정", phone:"010-****-5566", contactOk:true },
+    assignee:"", memo:"",
+    sightings:[ {t:ago(320), place:"성산읍 ○○리 마을회관 주차장", by:"최초 제보"} ] },
+];
+
+/* 위험도별 공개 범위 (근거 메모 2-3). 종결 건은 공개 지도에서 위치를 내린다. */
+const RISK = {
+  normal:   { r:18, label:"반경 약 300m 범위" },
+  resident: { r:30, label:"동 단위 범위 (주택가·임시보호처 인근)" },
+  urgent:   { r:34, label:"동 단위 광역 범위 (긴급 사건 · 기관 확인 후 공개)" },
+};
+function publicLoc(r){
+  if (r.status >= 3) return { show:false, why:"사건 종결 — 공개 지도에서 위치 내림" };
+  if (r.risk === "urgent" && r.status < 1)
+    return { show:false, why:"부상·도로 위 긴급 — 기관 확인 전까지 위치 비공개" };
+  const k = RISK[r.risk] || RISK.normal;
+  return { show:true, radius:k.r, label:k.label };
+}
+
+/* 목표 시간(제보 접수 시각 기준 누적, 분) — 기관 협의 전 시연용 가정치 */
+const SLA = [0, 30, 120, 1440];
+const STAGE_LABEL = ["접수 → 최초 확인", "최초 확인 → 기관 전달", "기관 전달 → 종결"];
+
+function dur(ms){
+  if (ms == null || !isFinite(ms)) return "—";
+  const m = Math.max(0, Math.round(ms/60000));
+  if (m < 60) return `${m}분`;
+  const h = Math.floor(m/60), r = m%60;
+  if (h < 24) return r ? `${h}시간 ${r}분` : `${h}시간`;
+  const d = Math.floor(h/24);
+  return h%24 ? `${d}일 ${h%24}시간` : `${d}일`;
+}
+
+/* 진행 중인 제보가 다음 단계 목표를 넘겼는지. 색만으로 구분하지 않도록 라벨·기호를 함께 돌려준다. */
+function slaOf(r){
+  if (r.status === 3){
+    const total = r.stamps[3] - r.stamps[0];
+    const ok = total <= SLA[3]*60000;
+    return { state: ok?"ok":"late", icon: ok?"✓":"!", label: ok?"목표 내 종결":"목표 초과 종결",
+             done:true, over: total - SLA[3]*60000 };
+  }
+  const target = SLA[r.status+1]*60000, el = Date.now() - r.stamps[0];
+  if (el > target) return { state:"late", icon:"!", label:`${STATUS[r.status+1]} 지연`, done:false, over: el-target };
+  if (el > target*0.75) return { state:"warn", icon:"▲", label:"목표 임박", done:false, over:0 };
+  return { state:"ok", icon:"✓", label:"목표 내 진행", done:false, over:0 };
+}
+const missing = [
+  { id:"LOST-201", kind:"실종", coat:"검정", size:"중형견", patt:"가슴 흰 무늬", injury:"없음",
+    place:"서귀포시 동홍동에서 실종", x:452, y:270, t:ago(180), collar:"빨간 목줄", name:"까미" },
+  { id:"LOST-202", kind:"실종", coat:"갈색", size:"대형견", patt:"단색", injury:"없음",
+    place:"제주시 연동에서 실종", x:222, y:160, t:ago(2400), collar:"검정 하네스", name:"보리" },
+  { id:"LOST-203", kind:"실종", coat:"흰색", size:"소형견", patt:"등쪽 갈색 얼룩", injury:"없음",
+    place:"한림읍에서 실종", x:140, y:224, t:ago(1500), collar:"없음", name:"코코" },
+];
+const logs = [];
+
+const dist = r => Math.round(Math.hypot(r.x-ME.x, r.y-ME.y) * 0.11 * 10) / 10; // 지도단위→km 환산(시연)
+const oneLine = r => `${hhmm(r.t)}, ${r.coat} ${r.size}, ${r.place}`;
+
+/* ══════════ 탭 ══════════ */
+$$("nav.tabs button").forEach(b => b.onclick = () => {
+  $$("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+  $$(".screen").forEach(s => s.classList.toggle("on", s.id === b.dataset.s));
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+const goTab = id => $(`nav.tabs button[data-s="${id}"]`).click();
+
+/* ══════════ QR 코드 (시연용 패턴) ══════════ */
+(function drawQR(){
+  const c = $("#qr"), g = c.getContext("2d"), N = 33;
+  g.fillStyle = "#fff"; g.fillRect(0,0,N,N);
+  g.fillStyle = "#111";
+  let s = 20260725;
+  const rnd = () => (s = (s*1103515245 + 12345) % 2147483648) / 2147483648;
+  for (let y=0; y<N; y++) for (let x=0; x<N; x++){
+    const fin = (x<8&&y<8)||(x>N-9&&y<8)||(x<8&&y>N-9);
+    if (fin) continue;
+    if (rnd() > .52) g.fillRect(x,y,1,1);
+  }
+  const finder = (ox,oy) => {
+    g.fillStyle="#111"; g.fillRect(ox,oy,7,7);
+    g.fillStyle="#fff"; g.fillRect(ox+1,oy+1,5,5);
+    g.fillStyle="#111"; g.fillRect(ox+2,oy+2,3,3);
+  };
+  finder(0,0); finder(N-7,0); finder(0,N-7);
+})();
+
+/* ══════════ 1. QR 제보 플로우 ══════════ */
+const SAMPLES = [
+  {coat:"검정", size:"중형견", patt:"가슴 흰 무늬", collar:"빨간 목줄"},
+  {coat:"갈색", size:"소형견", patt:"단색", collar:"없음"},
+  {coat:"흰색", size:"중형견", patt:"등쪽 갈색 얼룩", collar:"파란 목줄"},
+];
+let flow = { step:0, photo:null, gps:null, started:0, tick:null, ai:null, draft:null,
+             triage:null, triBasis:"", triCorrected:false, triFix:false };
+
+$("#scan").onclick = () => {
+  flow = { step:1, photo:null, gps:null, started:Date.now(), tick:null, ai:null, draft:null,
+           triage:null, triBasis:"", triCorrected:false, triFix:false };
+  renderPhone(); startTimer();
+};
+
+function startTimer(){
+  clearInterval(flow.tick);
+  flow.tick = setInterval(() => {
+    const el = $("#tm"); if (!el) return;
+    const s = Math.floor((Date.now() - flow.started)/1000);
+    el.querySelector("b").textContent = `${pad(Math.floor(s/60))}:${pad(s%60)}`;
+    el.classList.toggle("over", s > 60);
+  }, 250);
+}
+const elapsed = () => Math.floor((Date.now() - flow.started)/1000);
+
+function renderPhone(){
+  const p = $("#phone");
+  const bar = n => `<div class="steps">${[1,2,3,4].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`;
+  const tm = `<div class="timer" id="tm">⏱ 경과 <b>00:00</b> / 목표 01:00</div>`;
+
+  if (flow.step === 0){
+    p.innerHTML = `<div style="text-align:center;padding:44px 12px;color:var(--muted);font-size:13.5px">
+      왼쪽 포스터의 QR을 스캔하면<br>이 화면에 제보 페이지가 열립니다.</div>`;
+    return;
+  }
+
+  if (flow.step === 1){
+    p.innerHTML = bar(1) + tm + `
+      <h3 style="font-size:16px;margin-bottom:3px">발견한 개를 알려주세요</h3>
+      <p class="hint" style="margin:0 0 14px">회원가입 없이 제출됩니다. 3개 항목이면 충분합니다.</p>
+
+      <label class="f"><span>① 사진<em>*</em></span>
+        <div class="photo-pick" id="pick">
+          ${SAMPLES.map((s,i)=>`<button data-i="${i}" aria-pressed="false" title="${s.coat} ${s.size}">${dogSVG(s.coat,s.patt)}</button>`).join("")}
+        </div>
+        <div class="hint">시연용 샘플 사진을 선택하세요. (실제 서비스는 카메라 촬영)</div>
+      </label>
+
+      <label class="f"><span>② 위치<em>*</em></span>
+        <div class="btn-row">
+          <button class="btn sm" id="gpsBtn">📍 현재 위치 사용</button>
+          <span class="hint" id="gpsTxt" style="align-self:center;margin:0">아직 확인되지 않음</span>
+        </div>
+      </label>
+
+      <label class="f"><span>③ 목격 내용<em>*</em></span>
+        <textarea class="inp" id="desc" placeholder="예) 검은 중형견이 혼자 도로 쪽으로 걸어가요. 빨간 목줄은 있는데 사람은 안 보여요."></textarea>
+        <div class="hint">문장으로 편하게 적으면 AI가 항목별로 정리합니다.</div>
+      </label>
+
+      <label class="f"><span>목격 시간</span>
+        <input class="inp" id="seen" type="text" value="${hhmm(new Date())} (방금)" readonly>
+      </label>
+
+      <button class="btn primary" id="submit" style="width:100%" disabled>AI로 제보 카드 만들기</button>`;
+
+    $$("#pick button").forEach(b => b.onclick = () => {
+      $$("#pick button").forEach(x => x.setAttribute("aria-pressed", x === b));
+      flow.photo = SAMPLES[+b.dataset.i];
+      if (!$("#desc").value) $("#desc").value = defaultDesc(flow.photo);
+      check();
+    });
+    $("#gpsBtn").onclick = () => {
+      flow.gps = {x: 236 + (Math.random()*80-40), y: 150 + (Math.random()*50-25)};
+      $("#gpsTxt").innerHTML = `✅ 제주시 노형동 인근 <span style="font-family:ui-monospace">33.4${Math.floor(Math.random()*900+100)}, 126.4${Math.floor(Math.random()*900+100)}</span>`;
+      check();
+    };
+    $("#desc").oninput = check;
+    $("#submit").onclick = runAI;
+    function check(){
+      $("#submit").disabled = !(flow.photo && flow.gps && $("#desc").value.trim().length > 4);
+    }
+    return;
+  }
+
+  if (flow.step === 2){
+    p.innerHTML = bar(2) + tm + `
+      <div style="margin-bottom:10px">${triageBadge("analyzing")}</div>
+      <div class="thinking"><span class="spin"></span> AI가 사진을 분석하고 문장을 표준 항목으로 정리하는 중…</div>
+      <div class="hint">출력: 상태 판정(응급·출동·부정) · 표준 제보 카드 · 누락 항목 안내 · 개인정보 가림 후보</div>`;
+    return;
+  }
+
+  if (flow.step === 3){
+    const a = flow.draft;
+    const row = (k, key) => `<dt>${k}</dt><dd><input class="edit" data-k="${key}" value="${esc(a[key])}"></dd>`;
+    const em = flow.triage === "emergency";
+    p.innerHTML = bar(3) + tm + `
+      <div class="tri-card" data-state="${flow.triage}">
+        <div class="tri-top">
+          <div class="tri-thumb">${dogSVG(a.coat, a.patt)}</div>
+          <div>
+            ${triageBadge(flow.triage, true)}
+            ${flow.triCorrected ? `<div class="tri-note" style="margin-top:4px">제보자가 판정을 수정했습니다</div>` : ""}
+          </div>
+        </div>
+        <p class="tri-basis">${esc(flow.triBasis)}</p>
+        <div class="tri-note">AI 판단이며 담당자가 최종 확인합니다.</div>
+        ${flow.triFix ? `
+          <div class="btn-row" style="margin-top:10px" role="group" aria-label="판정 수정">
+            ${["emergency","dispatch","negative"].map(t =>
+              `<button class="btn sm" data-fixto="${t}" ${t===flow.triage?"disabled":""}>${TRIAGE[t].icon} ${TRIAGE[t].label}</button>`).join("")}
+          </div>`
+        : `<button class="tri-fix" id="fixTri">판정이 다른 것 같아요</button>`}
+      </div>
+      <div class="ai-card">
+        <h4>🤖 AI 표준 제보 카드 <span class="badge b-1 plain">수정 가능</span></h4>
+        <dl class="kv">
+          ${row("털색","coat")}${row("체격","size")}${row("무늬","patt")}
+          ${row("부상 여부","injury")}${row("이동 방향","dir")}${row("목줄","collar")}
+          <dt>위치</dt><dd style="font-size:12.5px">${esc(a.place)}</dd>
+          <dt>목격 시간</dt><dd style="font-size:12.5px">${hhmm(a.t)}</dd>
+        </dl>
+      </div>
+      ${flow.ai.missing.length
+        ? `<div class="notice warn">⚠️ <div><b>누락 항목 안내</b><br>${flow.ai.missing.join(" · ")} 항목이 비어 있습니다. 알고 계신 내용만 채워 주세요.</div></div>`
+        : `<div class="notice ok">✅ <div>필수 항목이 모두 채워졌습니다.</div></div>`}
+      <div class="notice warn">🔒 <div><b>개인정보 가림 후보</b><br>${flow.ai.mask.join(" · ")} — 공개 화면에서 자동으로 가립니다.</div></div>
+      <button class="btn primary" id="confirm" style="width:100%">${em ? "확정하고 응급 신고 진행" : "이대로 제보 확정하기"}</button>
+      <div class="hint" style="text-align:center;margin-top:7px">
+        ${em ? "응급 건은 확정 시 자동 신고 확인 화면이 열립니다." : "확정 전까지는 저장되지 않습니다."}</div>`;
+
+    $$(".kv .edit").forEach(i => i.oninput = () => { flow.draft[i.dataset.k] = i.value; });
+    const fx = $("#fixTri");
+    if (fx) fx.onclick = () => { flow.triFix = true; renderPhone(); };
+    $$("[data-fixto]").forEach(b => b.onclick = () => {
+      flow.triage = b.dataset.fixto;
+      flow.triBasis = `제보자 수정 판정 — AI 원판정(${TRIAGE[flow.ai.triage].label})을 ${TRIAGE[flow.triage].label}(으)로 변경했습니다.`;
+      flow.triCorrected = true; flow.triFix = false;
+      renderPhone();
+    });
+    $("#confirm").onclick = confirmReport;
+    return;
+  }
+
+  if (flow.step === 4){
+    clearInterval(flow.tick);
+    const r = flow.saved, sec = flow.finalSec, auto = r.autoReported;
+    p.innerHTML = bar(4) + `
+      <div class="receipt">
+        <div style="font-size:34px">${auto ? "🚨" : "✅"}</div>
+        <div style="font-size:13.5px;color:var(--muted)">${auto ? "담당 기관에 전달되었습니다" : "제보가 접수되었습니다"}</div>
+        <div class="no">${r.id}</div>
+        <div style="margin:6px 0 2px">${triageBadge(r.triage)}</div>
+        <div class="badge ${sec<=60?"b-4":"b-2"}">소요 ${pad(Math.floor(sec/60))}:${pad(sec%60)} ${sec<=60?"· 완료 기준 충족":"· 기준 초과"}</div>
+        <div style="margin:16px 0 4px;font-size:12.5px;color:var(--muted)">현재 상태</div>
+        ${badge(r.status)}
+        <div class="flow">${STATUS.map((s,i)=>`<div class="st ${i<=r.status?"done":""}">${s}</div>`).join("")}</div>
+        ${auto ? `
+          <div class="hint mono" style="margin:8px 0 0">
+            제보됨 ${hhmmss(r.stamps[0])} → AI 판정·기관 전달 ${hhmmss(r.stamps[2])}</div>
+          <div class="hint" style="margin:4px 0 16px">자동화 파이프라인이 수 초 내에 전달을 마쳤습니다.<br>잘못 신고된 경우 '정정 제보'로 알려주세요.</div>`
+        : `<div class="hint" style="margin:12px 0 16px">접수번호로 처리 상태를 계속 확인할 수 있습니다.<br>보호센터 전달 시 알림을 보냅니다.</div>`}
+        <div class="btn-row" style="justify-content:center">
+          <button class="btn primary" id="toMap">지도에서 확인하기 →</button>
+          <button class="btn" id="again">다시 시연</button>
+        </div>
+      </div>`;
+    $("#toMap").onclick = () => { selectReport(r.id); goTab("s2"); };
+    $("#again").onclick = () => { flow.step = 0; renderPhone(); };
+  }
+}
+
+/* 샘플별 기본 서술 — 트리아지 세 갈래(출동/응급/부정)가 시연에서 모두 나오게 한다 */
+function defaultDesc(s){
+  if (s.collar === "없음")
+    return `${s.coat} ${s.size} 한 마리가 뒷다리를 절뚝이면서 차도 쪽으로 걸어가요. 목줄은 없습니다.`;
+  if (s.coat === "흰색")
+    return `${s.coat} ${s.size} 한 마리가 공원 산책로를 혼자 돌아다녀요. ${s.collar}은 있는데 주인은 안 보입니다. 동쪽으로 이동 중이에요.`;
+  return `${s.coat} ${s.size} 한 마리가 골목을 혼자 걸어가고 있어요. ${s.collar}은 있는데 주인은 안 보입니다. 사람을 피해서 동쪽으로 이동 중이에요.`;
+}
+
+/* 규칙 기반 모의 AI: 사진 + 자유 서술 → 표준 항목 */
+function analyze(photo, text){
+  const t = text || "";
+  const DIRS = [
+    [/동(쪽|편|으로)/, "동쪽으로 이동"], [/서(쪽|편|으로)/, "서쪽으로 이동"],
+    [/남(쪽|편|으로)/, "남쪽으로 이동"], [/북(쪽|편|으로)/, "북쪽으로 이동"],
+    [/도로|차도|찻길/, "도로변으로 이동"], [/골목|주택가/, "골목 안쪽으로 이동"],
+    [/산책로|공원|해안/, "산책로 방향으로 이동"],
+  ];
+  const hit = DIRS.find(([re]) => re.test(t));
+  const dir = hit ? hit[1] : "";
+  const injury = /절뚝|절고|다쳤|다친|상처|부상|피가|피를|다리를 들/.test(t)
+    ? "다리 절뚝임 등 부상 의심"
+    : (/멀쩡|괜찮|다치지|멀쩡해/.test(t) ? "없음" : "");
+  const draft = {
+    coat: photo.coat, size: photo.size, patt: photo.patt,
+    injury, dir, collar: /목줄|하네스/.test(t) ? photo.collar : (photo.collar === "없음" ? "없음" : photo.collar),
+    place: "제주시 노형동 인근", t: new Date(),
+  };
+  const missing = [];
+  if (!draft.dir) { missing.push("이동 방향"); draft.dir = "미상"; }
+  if (!draft.injury) { missing.push("부상 여부"); draft.injury = "확인 어려움"; }
+  if (!/목줄|하네스/.test(t)) missing.push("목줄 유무");
+  const mask = ["사진 배경의 차량 번호판", "촬영자 GPS 정확 좌표"];
+  if (/아파트|빌라|연립|\d+\s*동|\d+\s*호|우리\s*집|저희\s*집/.test(t)) mask.push("문장 속 상세 주소");
+
+  /* ★ 트리아지 판정 (규칙 기반 모의) — 단정형 문구 금지, 근거 필수 */
+  let triage = "dispatch";
+  let triBasis = "단독 배회로 보이며 외상 징후는 확인되지 않습니다 — 구조 출동 대상으로 판단됩니다.";
+  const injured = injury !== "" && injury !== "없음";
+  const onRoad = /도로|차도|찻길|한복판|차에|사고/.test(t);
+  /* 동반 '긍정' 표현만 부정 판정 근거로 쓴다 — "주인은 안 보입니다" 같은 부재 서술이 걸리면 안 된다 */
+  const ownerPresent = /(주인|보호자|견주|사람)(이|가|이랑|랑|과|와)?\s*(있|함께|같이|옆에|데리고|보여요|보입니다)/.test(t)
+                       || /산책\s*중인|산책시키/.test(t);
+  const ownerAbsent  = /(주인|보호자|견주|사람)(은|이|가)?\s*(안|없)/.test(t);
+  if (ownerPresent && !ownerAbsent){
+    triage = "negative";
+    triBasis = "보호자 동반 정황이 보입니다 — 유기·유실 상황이 아닐 가능성이 높다고 판단됩니다.";
+  } else if (injured && onRoad){
+    triage = "emergency";
+    triBasis = `${injury} + 도로 위 위험 정황 — 즉시 대응이 필요한 응급으로 판단됩니다.`;
+  } else if (injured){
+    triage = "emergency";
+    triBasis = `${injury} — 부상 의심으로 응급 판단됩니다.`;
+  } else if (onRoad){
+    triage = "emergency";
+    triBasis = "도로 위 배회 — 교통사고 위험이 있어 응급으로 판단됩니다.";
+  }
+  return { draft, missing, mask, triage, triBasis };
+}
+
+function runAI(){
+  const text = $("#desc") ? $("#desc").value : "";   // 화면 교체 전에 먼저 읽는다
+  const captured = flow.photo;
+  flow.step = 2; renderPhone();
+  setTimeout(() => {
+    flow.ai = analyze(captured, text);
+    flow.draft = flow.ai.draft;
+    flow.triage = flow.ai.triage; flow.triBasis = flow.ai.triBasis;
+    flow.triCorrected = false; flow.triFix = false;
+    flow.step = 3; renderPhone();
+  }, 1100);
+}
+
+/* Human in Control — 응급이면 자동 신고 확인 시트를 먼저 연다 */
+function confirmReport(){
+  if (flow.triage === "emergency"){ openEmergencySheet(); return; }
+  saveReport(false);
+}
+
+/* ★ EmergencyConfirmSheet — Critical Action. 카운트다운 10초 + 연장 수단, 중단 버튼 동등 노출 */
+function openEmergencySheet(){
+  const a = flow.draft;
+  let remain = 10;
+  const dim = document.createElement("div");
+  dim.className = "em-dim";
+  dim.innerHTML = `
+    <div class="em-sheet" role="alertdialog" aria-modal="true" aria-label="응급 자동 신고 확인">
+      <div class="em-banner">🚨 응급 자동 신고</div>
+      <div class="em-body">
+        <p style="margin:0 0 8px;font-size:14px;line-height:22px">
+          AI가 응급으로 판단해 아래 내용이 담당 기관에 자동 신고됩니다.</p>
+        <dl style="margin:0">
+          <div class="em-row"><dt>사진</dt><dd><div style="width:44px;height:44px;border-radius:8px;overflow:hidden">${dogSVG(a.coat,a.patt)}</div></dd></div>
+          <div class="em-row"><dt>위치</dt><dd>${esc(a.place)}</dd></div>
+          <div class="em-row"><dt>시간</dt><dd class="mono">${hhmmss(new Date())}</dd></div>
+          <div class="em-row"><dt>판정 근거</dt><dd>${esc(flow.triBasis)}</dd></div>
+        </dl>
+        <div class="em-count" aria-live="assertive">
+          <b id="emRemain">10</b>초 후 자동 신고
+          <span class="em-bar"><i id="emBar" style="width:100%"></i></span>
+          <button class="btn sm" id="emExtend">+30초</button>
+        </div>
+        <div class="em-actions">
+          <button class="btn emergency" id="emNow">지금 바로 신고</button>
+          <button class="btn" id="emStop">응급이 아니에요</button>
+        </div>
+        <div class="tri-note" style="margin-top:10px">신고 후 취소가 아닌 '정정 제보'로 안내됩니다. AI 판단이며 담당자가 최종 확인합니다.</div>
+      </div>
+    </div>`;
+  $("#phone").appendChild(dim);
+
+  const tick = setInterval(() => {
+    remain -= 1;
+    const el = $("#emRemain"), bar = $("#emBar");
+    if (el) el.textContent = remain;
+    if (bar) bar.style.width = Math.max(0, remain/10*100) + "%";
+    if (remain <= 0){ fire(); }
+  }, 1000);
+  const close = () => { clearInterval(tick); dim.remove(); };
+  const fire = () => { close(); saveReport(true); };
+
+  $("#emNow").onclick = fire;
+  $("#emExtend").onclick = () => { remain += 30; $("#emRemain").textContent = remain; };
+  $("#emStop").onclick = () => {
+    close();
+    flow.triage = "dispatch"; flow.triCorrected = true;
+    flow.triBasis = "제보자가 응급이 아니라고 확인 — 출동 대상으로 전환되었습니다.";
+    renderPhone();                       // 판정 카드로 복귀, 일반 확정 경로
+    toast("응급 해제 · 출동 판정으로 전환");
+  };
+}
+
+function saveReport(auto){
+  const a = flow.draft;
+  const t0 = new Date();
+  const r = {
+    id: `JJ-${++seq}`, kind:"제보",
+    coat:a.coat, size:a.size, patt:a.patt, injury:a.injury, dir:a.dir, collar:a.collar,
+    place:a.place, area:"제주시 노형동", x:flow.gps.x, y:flow.gps.y, t:t0,
+    status: auto ? 2 : 0, isNew:true, mine:true, autoReported:auto,
+    stamps: auto ? [t0, t0, t0, null] : [t0, null, null, null],   // 자동 신고: 초 단위 동시각 기록
+    triage: flow.triage, triBasis: flow.triBasis, triCorrected: flow.triCorrected,
+    risk: flow.triage === "emergency" ? "urgent" : "normal",
+    reporter:{ name:"본인", phone:"010-****-0000", contactOk:true },
+    assignee:"", memo:"",
+    sightings:[ {t:t0, place:a.place, by:"최초 제보"} ],
+  };
+  reports.unshift(r);
+  if (auto) addLog(r.id, `응급 자동 신고 — 접수·판정·기관 전달 ${hhmmss(t0)} 동시 처리`, "doglink 자동화");
+  if (flow.triCorrected) addLog(r.id, `트리아지 수정 — 제보자가 ${TRIAGE[flow.triage].label}(으)로 확정`, "제보자");
+  flow.saved = r; flow.finalSec = elapsed(); flow.step = 4;
+  renderPhone(); renderMap(); renderList(); renderNewList(); renderKpi(); renderMyStatus();
+  toast(auto ? `${r.id} 응급 자동 신고 · 기관 전달 완료` : `제보 ${r.id} 접수 완료 · 확인 대기 시작`);
+}
+renderPhone();
+
+/* ══════════ 2. 지도 · 목록 · 상태 ══════════ */
+let sel = null, sort = "recent", role = "public";
+const revealed = new Set();      // 기관이 사유를 남기고 좌표를 연 사건
+const access = [];               // 위치 열람 감사 기록
+
+const ROLE_NOTE = {
+  public: "로그인하지 않은 시민 — 대략적 범위와 처리 상태만 열람합니다.",
+  owner:  "본인이 등록한 사건만 정확한 위치를 보고, 다른 사건은 시민과 동일하게 보입니다.",
+  agency: "인증·승인된 담당자 — 담당 사건에 한해 사유를 남기고 정확한 좌표를 엽니다.",
+};
+
+/* 역할별로 서버가 내려주는 필드 자체가 다르다. 화면에서 가리는 게 아니라 여기서 제거한다.
+   (근거 메모 10-1 / 15 — 공개 API 응답에 정확 좌표를 포함하지 않는다) */
+function project(r, who = role){
+  const mine = who === "owner" && r.mine;
+  const full = who === "agency" || mine;
+  const loc = publicLoc(r);
+  const out = {
+    사건번호: r.id,
+    동물사진: "thumb://" + r.id,
+    AI판정: TRIAGE[r.triage] ? TRIAGE[r.triage].label : "분석 중",
+    AI판정_근거: r.triBasis || "",
+    털색: r.coat, 체격: r.size, 무늬: r.patt,
+    부상여부: r.injury, 이동방향_추정: r.dir, 목줄: r.collar,
+    마지막_목격_시각: hhmm(lastSeen(r)),
+    처리상태: STATUS[r.status],
+    기관_전달_여부: r.status >= 2 ? "전달됨" : "전달 전",
+  };
+  if (full){
+    out.정확좌표 = (who === "agency" && !revealed.has(r.id))
+      ? "[열람 사유 입력 후 제공]"
+      : `33.${(4000+Math.round(r.y)).toString().slice(0,4)}, 126.${(4000+Math.round(r.x)).toString().slice(0,4)}`;
+    out.상세주소 = r.place;
+    out.목격이력 = r.sightings.map(s => `${hhmm(s.t)} ${s.place}`);
+    out.현재위치_기준_거리 = dist(r) + "km";
+  } else {
+    out.대략적_위치 = loc.show ? `${r.area} · ${loc.label}` : "비공개";
+    out.현재위치_기준_거리 = distLabel(r);
+  }
+  if (who === "agency"){
+    out.신고자 = r.reporter.name;
+    out.신고자_연락처 = r.reporter.contactOk ? r.reporter.phone : "[연락 비동의]";
+    out.담당자 = r.assignee || "미지정";
+    out.내부메모 = r.memo || "";
+  }
+  return out;
+}
+
+/* 공개 화면에서 제거된 필드 목록 — 시연에서 "무엇이 빠졌는지"를 보여준다. */
+const HIDDEN_FIELDS = ["정확좌표","상세주소","목격이력","신고자","신고자_연락처","담당자","내부메모",
+                       "원본사진_EXIF","임시보호처_주소","출동_예정시각"];
+
+const lastSeen = r => r.sightings.reduce((a,s)=> s.t > a ? s.t : a, r.sightings[0].t);
+const firstSeen = r => r.sightings[0].t;
+
+/* 공개 데이터는 정확한 거리를 주지 않는다 — 역산으로 위치를 좁힐 수 있기 때문 (메모 2-5) */
+function distLabel(r){
+  const km = dist(r);
+  if (km < 1) return "1km 이내";
+  if (km >= 10) return "10km 이상";
+  return `약 ${Math.round(km)}km`;
+}
+const canSeeExact = r => role === "agency" ? revealed.has(r.id) : (role === "owner" && !!r.mine);
+
+$$("#sortToggle button").forEach(b => b.onclick = () => {
+  sort = b.dataset.k;
+  $$("#sortToggle button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderList();
+});
+$$("#roleToggle button").forEach(b => b.onclick = () => {
+  role = b.dataset.r;
+  $$("#roleToggle button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  applyRole();
+});
+
+function applyRole(){
+  $("#roleNote").textContent = ROLE_NOTE[role];
+  $("#opsMetrics").hidden = role !== "agency";
+  $("#agencyBody").hidden = role !== "agency";
+  $("#agencyGate").hidden = role === "agency";
+  $("#privacyNote").textContent = role === "agency"
+    ? "기관 화면 · 담당 사건 좌표 열람 가능(기록됨)"
+    : "공개 화면 · 정확 위치 대신 추정 범위만 표시";
+  $("#distNote").innerHTML = role === "agency"
+    ? "거리 기준: 현재 위치(제주시청) — 시연용 고정 좌표"
+    : "거리는 <b>대략적인 범위</b>로만 제공합니다 — 정확한 거리로 위치를 역산할 수 없도록 합니다.";
+  $("#mapGuide").className = "guide " + (role === "agency" ? "agc" : "pub");
+  $("#mapGuide").textContent = role === "agency"
+    ? "정확한 위치정보는 담당 사건의 구조·보호 업무에만 사용해야 하며, 모든 열람 기록이 저장됩니다."
+    : "동물과 제보자의 안전을 위해 정확한 위치는 공개하지 않습니다. 추가 목격 정보를 등록하면 담당 기관의 확인에 도움이 됩니다.";
+  renderMap(); renderList(); renderDetail(); renderKpi(); renderMyStatus();
+  renderNewList(); renderStatusPanel();
+}
+
+/* 일반 시민·제보자에게는 운영 통계 대신 '내 제보 처리 안내'만 보여준다 (메모 2-4) */
+function renderMyStatus(){
+  const el = $("#myStatus");
+  if (role === "agency"){ el.innerHTML = ""; return; }
+  const mine = reports.filter(r => r.mine);
+  if (!mine.length){
+    el.innerHTML = `<div class="guide pub" style="margin-bottom:16px">
+      제보하시면 이 자리에 <b>내 제보의 처리 상태와 예상 안내</b>가 표시됩니다.
+      운영 통계(평균 확인 시간·지연 건)는 기관 관리 지표라 시민 화면에는 표시하지 않습니다.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card card-pad" style="margin-bottom:16px">
+    <div class="sec-title">내 제보 처리 안내 <span class="hint" style="margin:0;font-weight:500">${mine.length}건</span></div>
+    ${mine.map(r => {
+      const s = slaOf(r);
+      return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:7px 0">
+        <b style="font-size:13px">${r.id}</b>${badge(r.status)}
+        <span class="hint" style="margin:0;flex:1">${esc(r.coat)} ${esc(r.size)} · ${esc(r.area)}</span>
+        <span class="hint" style="margin:0">${s.done ? "종결" : `다음 단계 ${STATUS[r.status+1]} 대기 중`}</span>
+      </div>`;
+    }).join("")}
+    <div class="hint" style="margin-top:8px">
+      상태가 바뀌면 알림을 보냅니다. 본인 사건은 정확한 위치와 목격 이력을 확인할 수 있습니다.
+    </div></div>`;
+}
+
+/* 4개 지표 타일. 값은 텍스트 토큰만 쓰고, 상태는 아이콘+단어를 함께 단다. */
+function renderKpi(){
+  const acked = reports.filter(r => r.stamps[1]);
+  const done  = reports.filter(r => r.status === 3 && r.stamps[3]);
+  const open  = reports.filter(r => r.status < 3);
+  const mean = a => a.length ? a.reduce((s,v)=>s+v,0)/a.length : null;
+
+  const ack  = mean(acked.map(r => r.stamps[1] - r.stamps[0]));
+  const tot  = mean(done.map(r => r.stamps[3] - r.stamps[0]));
+  const late = open.filter(r => slaOf(r).state === "late");
+  const worst = open.length ? open.reduce((a,b)=> (Date.now()-a.stamps[0]) > (Date.now()-b.stamps[0]) ? a : b) : null;
+
+  const tile = (lab, val, sub) => `<div class="tile">
+    <div class="lab">${lab}</div>
+    <div class="val${val === null ? " na" : ""}">${val === null ? "표본 없음" : val}</div>
+    <div class="sub">${sub}</div></div>`;
+
+  /* 응급 미처리 카운터 — 0건이 아니면 응급색 (문서 §7.3) */
+  const emOpen = reports.filter(r => r.triage === "emergency" && r.status < 2);
+  $("#kpi").innerHTML =
+    `<div class="tile" ${emOpen.length ? 'style="border:1.5px solid var(--tri-em-border);border-left:4px solid var(--tri-em-solid)"' : ""}>
+      <div class="lab">🚨 응급 미처리</div>
+      <div class="val" ${emOpen.length ? 'style="color:var(--tri-em)"' : ""}>${emOpen.length}<small> 건</small></div>
+      <div class="sub">${emOpen.length ? emOpen.map(r=>r.id).join(" · ") : "모든 응급 건 전달 완료"}</div>
+    </div>` +
+    tile("평균 최초 확인 시간", ack === null ? null : dur(ack),
+         `${acked.length}건 기준 · 목표 ${SLA[1]}분`) +
+    tile("평균 종결까지 시간", tot === null ? null : dur(tot),
+         `종결 ${done.length}건 기준 · 목표 ${SLA[3]/60}시간`) +
+    tile("목표 초과 진행 건", `${late.length}<small> / ${open.length}건</small>`,
+         late.length ? `<span class="sla sla-late">! 확인 필요</span>` : `<span class="sla sla-ok">✓ 정상</span>`) +
+    tile("최장 대기 중", worst ? dur(Date.now() - worst.stamps[0]) : null,
+         worst ? `${worst.id} · ${STATUS[worst.status]} 상태` : "진행 중 제보 없음");
+}
+
+/* 단계별 체류시간 누적 막대. 세그먼트 색은 '그 시간 동안 머문 상태'를 가리킨다. */
+function timelineHTML(r){
+  const segs = [];
+  for (let i = 0; i < 3; i++){
+    const from = r.stamps[i], to = r.stamps[i+1];
+    if (from && to) segs.push({ i, ms: to - from, open:false });
+    else if (from && !to){ segs.push({ i, ms: Date.now() - from, open:true }); break; }
+    else break;
+  }
+  const total = segs.reduce((s,x)=>s+x.ms, 0) || 1;
+  const bars = segs.map(s =>
+    `<span class="${s.open ? "open" : "g"+(s.i+1)}" style="flex:${Math.max(s.ms,total*0.02)}"
+       title="${esc(STAGE_LABEL[s.i])}: ${dur(s.ms)}${s.open?" (진행 중)":""}"></span>`).join("");
+  const labs = segs.map(s =>
+    `<span><i style="background:${s.open ? "var(--muted)" : "var(--st"+(s.i+1)+")"}"></i>${STAGE_LABEL[s.i]} <b>${dur(s.ms)}</b>${s.open?" 진행 중":""}</span>`).join("");
+  return `<div class="tl">${bars}</div><div class="tl-lab">${labs}</div>`;
+}
+
+function renderMap(){
+  let hidden = 0;
+  /* 마커 형태 = 트리아지 이중 부호화: 응급 원형 / 출동 사각 / 부정 작은 점 / 종결 체크 */
+  const pinShape = (r, x, y, on) => {
+    if (r.status === 3)
+      return `<circle class="done" cx="${x}" cy="${y}" r="${on?9:7}"/>
+              <path d="M${x-3.4} ${y} l2.3 2.6 l4.4 -5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`;
+    if (r.triage === "emergency") return `<circle class="pin" cx="${x}" cy="${y}" r="${on?9:7}"/>`;
+    if (r.triage === "negative")  return `<circle class="pin" cx="${x}" cy="${y}" r="${on?5.5:4}"/>`;
+    const s = on ? 8 : 6.5;
+    return `<rect class="pin" x="${x-s}" y="${y-s}" width="${s*2}" height="${s*2}" rx="2.5"/>`;
+  };
+  $("#markers").innerHTML = reports.map(r => {
+    const on = sel === r.id, late = role === "agency" && slaOf(r).state === "late";
+    const exact = canSeeExact(r);
+    const triLabel = TRIAGE[r.triage] ? TRIAGE[r.triage].label : "";
+    if (!exact){
+      const loc = publicLoc(r);
+      if (!loc.show){ hidden++; return ""; }          // 데이터 자체를 지도에 싣지 않는다
+      /* 범위 원 안에서 중심을 흔들어 원점이 곧 좌표가 되지 않게 한다 */
+      const jx = r.x + (r.id.charCodeAt(4)%7 - 3) * 2, jy = r.y + (r.id.charCodeAt(5)%7 - 3) * 2;
+      return `<g class="marker ${on?"sel":""}" data-tri="${r.triage}" data-id="${r.id}" tabindex="0" role="button"
+                 aria-label="AI 판정 ${triLabel}, ${esc(r.area)} ${esc(loc.label)}, ${STATUS[r.status]}">
+        <circle class="halo" cx="${jx}" cy="${jy}" r="${(on?1.25:1) * loc.radius}"/>
+        ${on ? `<text x="${jx}" y="${jy - loc.radius - 6}" text-anchor="middle" font-size="11"
+                 font-weight="700" fill="currentColor">${esc(r.area)}</text>` : ""}
+      </g>`;
+    }
+    return `<g class="marker ${on?"sel":""}" data-tri="${r.triage}" data-id="${r.id}" tabindex="0" role="button"
+               aria-label="AI 판정 ${triLabel}, ${esc(oneLine(r))}">
+      ${pinShape(r, r.x, r.y, on)}
+      ${late ? `<circle class="late" cx="${r.x}" cy="${r.y}" r="${on?14:12}"/>` : ""}
+      ${on ? `<text x="${r.x}" y="${r.y-(late?20:15)}" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">${r.id}</text>` : ""}
+    </g>`;
+  }).join("");
+  $("#privacyNote").innerHTML = role === "agency"
+    ? "기관 화면 · 담당 사건 좌표 열람 가능(기록됨)"
+    : `공개 화면 · 추정 범위만 표시${hidden ? ` <b>· ${hidden}건은 위치 비공개</b>` : ""}`;
+  $$("#markers .marker").forEach(g => {
+    g.onclick = () => selectReport(g.dataset.id);
+    g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectReport(g.dataset.id); } };
+  });
+}
+
+function renderList(){
+  const arr = [...reports].sort((a,b) => sort === "recent" ? lastSeen(b) - lastSeen(a) : dist(a) - dist(b));
+  $("#count").textContent = `${reports.length}건`;
+  $("#list").innerHTML = arr.map(r => {
+    const s = slaOf(r), exact = canSeeExact(r), loc = publicLoc(r);
+    const where = exact ? r.place : (loc.show ? r.area : "위치 비공개");
+    return `
+    <button class="item" data-id="${r.id}" aria-current="${sel===r.id}">
+      <div class="row1">
+        <span class="sum">${hhmm(lastSeen(r))} 목격, ${esc(r.coat)} ${esc(r.size)}, ${esc(where)}</span>
+        <span style="display:inline-flex;gap:5px;align-items:center">${triageBadge(r.triage)}${badge(r.status)}</span>
+      </div>
+      <div class="meta">
+        <span>${r.id}</span><span>${exact ? dist(r)+"km" : distLabel(r)}</span>
+        <span>${r.patt}</span>${r.injury && r.injury !== "없음" ? `<span style="color:var(--danger)">${esc(r.injury)}</span>` : ""}
+        ${r.mine ? `<span style="color:var(--brand);font-weight:700">내 제보</span>` : ""}
+        ${r.isNew ? `<span style="color:var(--brand);font-weight:700">NEW</span>` : ""}
+      </div>
+      ${role === "agency" ? `
+      <div class="meta" style="margin-top:5px">
+        <span class="sla sla-${s.state}">${s.icon} ${esc(s.label)}</span>
+        <span>${s.done ? `총 ${dur(r.stamps[3]-r.stamps[0])}` : `${dur(Date.now()-r.stamps[0])} 경과`}</span>
+      </div>` : ""}
+    </button>`; }).join("");
+  $$("#list .item").forEach(b => b.onclick = () => selectReport(b.dataset.id));
+}
+
+function selectReport(id){ sel = id; renderMap(); renderList(); renderDetail(); renderNewList(); renderStatusPanel(); }
+
+function renderDetail(){
+  const r = reports.find(x => x.id === sel);
+  if (!r){ $("#detail").innerHTML = `<div class="empty">지도의 마커나 오른쪽 목록에서 제보를 선택하세요.</div>`; return; }
+  const sla = slaOf(r), exact = canSeeExact(r), loc = publicLoc(r);
+  $("#detail").innerHTML = `
+    <div class="card card-pad" style="box-shadow:none">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:64px;height:64px;border-radius:10px;overflow:hidden;flex:none">${dogSVG(r.coat, r.patt)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+            <h4 style="font-size:15px">${esc(r.coat)} ${esc(r.size)}</h4>${badge(r.status)}
+          </div>
+          <div class="hint" style="margin-top:3px">
+            ${r.id} · 마지막 목격 ${hhmm(lastSeen(r))} · ${exact ? dist(r)+"km" : distLabel(r)}
+          </div>
+          <div style="font-size:13px;margin-top:7px">
+            무늬 ${esc(r.patt)} · 목줄 ${esc(r.collar)} · 부상 ${esc(r.injury)} · 제보 기반 이동 방향 ${esc(r.dir)}
+          </div>
+          <div style="font-size:12.5px;margin-top:6px;color:var(--muted)">
+            ${exact
+              ? `📍 ${esc(r.place)} <span style="font-family:ui-monospace">33.${(4000+Math.round(r.y)).toString().slice(0,4)}, 126.${(4000+Math.round(r.x)).toString().slice(0,4)}</span>`
+              : loc.show
+                ? `📍 ${esc(r.area)} · <b>${esc(loc.label)}</b> <span class="badge plain">정확 좌표 미전송</span>`
+                : `📍 <span class="redact">위치 비공개</span> <span class="hint" style="margin:0">${esc(loc.why)}</span>`}
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+        ${triageBadge(r.triage)}
+        <span class="hint" style="margin:2px 0 0;flex:1;min-width:180px">
+          ${esc(r.triBasis || "")}${r.triCorrected ? " (제보자 수정)" : ""} — AI 판단이며 담당자가 최종 확인합니다.
+          ${r.autoReported ? `<br><b class="mono">자동 신고: 접수 ${hhmmss(r.stamps[0])} → 기관 전달 ${hhmmss(r.stamps[2])}</b>` : ""}
+        </span>
+      </div>
+      <div class="flow">${STATUS.map((s,i)=>`<div class="st ${i<=r.status?"done":""}">${s}</div>`).join("")}</div>
+      <div class="sec-title" style="margin:14px 0 0">단계별 소요시간</div>
+      ${timelineHTML(r)}
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="sla sla-${sla.state}">${sla.icon} ${esc(sla.label)}</span>
+        <span class="hint" style="margin:0">
+          ${sla.done
+            ? `접수부터 종결까지 총 <b>${dur(r.stamps[3]-r.stamps[0])}</b>`
+            : `현재 <b>${dur(Date.now()-r.stamps[0])}</b> 경과 · 다음 단계(${STATUS[r.status+1]}) 목표 ${dur(SLA[r.status+1]*60000)}`}
+          ${sla.over > 0 ? ` · <b style="color:var(--danger)">${dur(sla.over)} 초과</b>` : ""}
+        </span>
+      </div>
+      ${role === "agency" || exact ? `
+        <div class="sec-title" style="margin:14px 0 0">최근 목격 이력</div>
+        <ul class="hist">${r.sightings.map((s,i)=>`
+          <li class="${i===0?"first":""}"><time>${hhmm(s.t)}</time>${esc(s.place)}
+            <span class="hint" style="margin:0">· ${esc(s.by)}</span></li>`).join("")}</ul>
+        <div class="hint" style="margin-top:6px">
+          최초 목격 ${hhmm(firstSeen(r))} · 마지막 확인 ${hhmm(lastSeen(r))} · 총 ${r.sightings.length}건
+        </div>` : ""}
+
+      ${role === "agency" ? `
+        ${!revealed.has(r.id) ? `
+          <div class="reveal-form">
+            <div style="font-size:12.5px;font-weight:600;margin-bottom:6px">정확 좌표 열람</div>
+            <div class="hint" style="margin:0 0 7px">담당 사건에 한해 열람할 수 있으며, 사유와 함께 기록이 남습니다.</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <select class="inp" id="reason" style="flex:1;min-width:170px;padding:6px 9px">
+                <option value="">열람 사유 선택…</option>
+                <option>현장 출동 준비</option>
+                <option>포획·구조 인력 배정</option>
+                <option>보호센터 인계 확인</option>
+                <option>보호자 반환 확인</option>
+                <option>중복 제보 대조</option>
+              </select>
+              <button class="btn sm primary" id="revealBtn">좌표 열람</button>
+            </div>
+          </div>` : `
+          <div class="reveal-form" style="border-color:var(--warn)">
+            <span class="sla sla-warn">기록됨</span>
+            <span class="hint" style="margin-left:6px">
+              ${esc((access.find(a=>a.id===r.id)||{}).reason || "")} 사유로 열람 · 위치 열람 기록에 저장됨
+            </span>
+          </div>`}
+        <div class="sec-title" style="margin:14px 0 0">기관 내부 정보</div>
+        <div style="font-size:12.5px;margin-top:7px">
+          담당자 ${esc(r.assignee || "미지정")}<br>
+          신고자 ${esc(r.reporter.name)} ·
+          ${r.reporter.contactOk
+            ? `연락 가능 <span class="hint" style="margin:0">(운영자 중계 · 번호 직접 노출 안 함)</span>`
+            : `<b style="color:var(--danger)">연락 비동의</b>`}<br>
+          <span class="hint" style="margin:0">내부 메모</span> ${esc(r.memo) || "—"}
+        </div>
+        <div class="btn-row" style="margin-top:12px"><button class="btn sm" id="toMatch">중복·실종 매칭 확인 →</button></div>
+      ` : `
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn sm primary" id="addSight">추가 목격 제보</button>
+          <button class="btn sm" id="reportAbuse">잘못된 정보·악용 신고</button>
+        </div>
+        <div class="hint" style="margin-top:8px">상태는 담당 기관이 갱신하며, 변경되는 즉시 이 화면에 반영됩니다.</div>`}
+    </div>`;
+
+  const btn = $("#toMatch"); if (btn) btn.onclick = () => goTab("s3");
+  const rev = $("#revealBtn");
+  if (rev) rev.onclick = () => {
+    const why = $("#reason").value;
+    if (!why){ toast("열람 사유를 선택하세요"); return; }
+    revealed.add(r.id);
+    access.unshift({ t:new Date(), id:r.id, who:"기관 담당자(시연 계정)", reason:why });
+    renderAccess(); renderMap(); renderList(); renderDetail();
+    toast(`${r.id} 좌표 열람 · 기록됨`);
+  };
+  const add = $("#addSight");
+  if (add) add.onclick = () => {
+    r.sightings.push({ t:new Date(), place:`${r.area} 인근 (추가 목격)`, by:"시민 추가 제보" });
+    addLog(r.id, `추가 목격 제보 등록 (총 ${r.sightings.length}건)`);
+    renderList(); renderDetail(); renderMap();
+    toast("추가 목격이 등록되었습니다");
+  };
+  const ab = $("#reportAbuse");
+  if (ab) ab.onclick = () => {
+    addLog(r.id, "시민 신고 접수 — 잘못된 정보·악용 의심");
+    toast("신고가 접수되었습니다. 운영자가 검토합니다");
+  };
+}
+
+function renderAccess(){
+  $("#access").innerHTML = access.length
+    ? access.map(a => `<tr><td class="mono" style="color:var(--muted);white-space:nowrap">${hhmmss(a.t)}</td>
+        <td class="mono" style="font-size:12px">${esc(a.id)}</td>
+        <td>${esc(a.who)}<br><span class="hint" style="margin:0">${esc(a.reason)}</span></td></tr>`).join("")
+    : `<tr><td class="empty" colspan="3">열람 기록이 없습니다.</td></tr>`;
+}
+
+/* ══════════ 3. 매칭 · 상태 변경 ══════════ */
+/* ★ AgencyQueueRow — 트리아지 우선순위(응급→출동→부정) → 최근순. 응급은 항상 최상단. */
+function renderNewList(){
+  const arr = [...reports].sort((a,b) => {
+    const ta = TRIAGE[a.triage]?.order ?? 9, tbb = TRIAGE[b.triage]?.order ?? 9;
+    return ta - tbb || b.t - a.t;
+  });
+  $("#newList").innerHTML = arr.map(r => `
+    <button class="qrow" role="option" data-tri="${r.triage}" data-id="${r.id}" aria-current="${sel===r.id}"
+            aria-selected="${sel===r.id}">
+      ${triageBadge(r.triage)}
+      <span class="qtime mono">${hhmm(r.t)}</span>
+      <span class="qid mono">${r.id}</span>
+      <span class="qth">${dogSVG(r.coat, r.patt)}</span>
+      <span class="qsum">${esc(r.coat)} ${esc(r.size)} · ${esc(r.patt)} · ${esc(r.area)}</span>
+      ${badge(r.status)}
+    </button>`).join("");
+  const rows = $$("#newList .qrow");
+  rows.forEach((b, i) => {
+    b.onclick = () => { selectReport(b.dataset.id); renderCands(); };
+    b.onkeydown = e => {
+      if (e.key === "ArrowDown" && rows[i+1]) { e.preventDefault(); rows[i+1].focus(); }
+      if (e.key === "ArrowUp"   && rows[i-1]) { e.preventDefault(); rows[i-1].focus(); }
+      if (e.key === "Enter") { e.preventDefault(); selectReport(b.dataset.id); renderCands(); }
+    };
+  });
+  renderCands();
+}
+
+/* 유사도: 털색·무늬·체격·거리·시간 가중 합산 (참고 점수, 확정 아님) */
+function candidatesFor(r){
+  const pool = [...missing, ...reports.filter(x => x.id !== r.id)];
+  return pool.map(c => {
+    const reasons = [];
+    let s = 0;
+    if (c.coat === r.coat){ s += 30; reasons.push({t:`털색 일치 (${c.coat})`, hit:true}); }
+    else reasons.push({t:`털색 다름 (${c.coat})`, hit:false});
+
+    const pa = (a,b) => { const A=new Set(a.replace(/[ ·]/g,"")), B=[...b.replace(/[ ·]/g,"")];
+      return B.filter(ch=>A.has(ch)).length / Math.max(A.size,1); };
+    const pm = pa(r.patt, c.patt);
+    if (pm > .6){ s += 25; reasons.push({t:`무늬 유사 (${c.patt})`, hit:true}); }
+    else reasons.push({t:`무늬 차이 (${c.patt})`, hit:false});
+
+    if (c.size === r.size){ s += 15; reasons.push({t:`체격 일치 (${c.size})`, hit:true}); }
+    else reasons.push({t:`체격 다름 (${c.size})`, hit:false});
+
+    const km = Math.round(Math.hypot(c.x-r.x, c.y-r.y) * 0.11 * 10) / 10;
+    if (km < 6){ s += 20 - km*2; reasons.push({t:`거리 ${km}km`, hit:true}); }
+    else reasons.push({t:`거리 ${km}km`, hit:false});
+
+    const hrs = Math.abs(r.t - c.t) / 3600000;
+    if (hrs < 24){ s += 10 - hrs/4; reasons.push({t:`시간차 ${hrs<1 ? Math.round(hrs*60)+"분" : hrs.toFixed(1)+"시간"}`, hit:true}); }
+    else reasons.push({t:`시간차 ${Math.round(hrs/24)}일`, hit:false});
+
+    if (c.collar && r.collar && c.collar === r.collar && c.collar !== "없음"){ s += 8; reasons.push({t:`목줄 동일 (${c.collar})`, hit:true}); }
+    return { c, score: Math.max(0, Math.min(99, Math.round(s))), reasons };
+  }).sort((a,b) => b.score - a.score).slice(0,3);
+}
+
+const decisions = {};   // `${a}|${b}` → 결정
+function renderCands(){
+  const r = reports.find(x => x.id === sel);
+  if (!r){ $("#cands").innerHTML = `<div class="empty">위에서 신규 제보를 선택하면 AI가 후보를 제시합니다.</div>`; return; }
+  const list = candidatesFor(r);
+  $("#cands").innerHTML = `
+    <div class="hint" style="margin:-2px 0 10px">기준 제보 <b>${r.id}</b> · ${esc(r.coat)} ${esc(r.size)} · ${esc(r.patt)}</div>
+    ${list.map(({c, score, reasons}) => {
+      const key = `${r.id}|${c.id}`, d = decisions[key];
+      return `<div class="cand ${d?"decided":""}">
+        <div class="top">
+          <div class="th">${dogSVG(c.coat, c.patt)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+              <b style="font-size:13.5px">${c.id}${c.name ? ` · ${esc(c.name)}` : ""}</b>
+              <span class="badge ${c.kind==="실종"?"b-2":"b-1"}">${c.kind}</span>
+            </div>
+            <div class="hint" style="margin-top:2px">${esc(c.place)} · ${hhmm(c.t)}</div>
+          </div>
+        </div>
+        <div class="score"><span class="hint" style="margin:0">참고 점수</span>
+          <span class="bar"><i style="width:${score}%"></i></span><b>${score}</b></div>
+        <div class="reasons">${reasons.map(x=>`<span class="${x.hit?"hit":""}">${esc(x.t)}</span>`).join("")}</div>
+        ${d ? `<div class="decision">
+                 👤 ${esc(d.by)} · <b>${esc(d.action)}</b>
+                 <span class="hint" style="margin:0">— ${esc(d.reason)} · ${hhmm(d.t)}</span>
+                 <button class="btn sm" data-undo="${key}" style="margin-left:8px">되돌리기</button>
+               </div>`
+            : `<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+                 <select class="inp" data-rs="${key}" style="flex:1;min-width:150px;padding:6px 9px">
+                   <option value="">결정 사유 선택…</option>
+                   <option>사진·특징이 일치</option>
+                   <option>목격 시간·장소가 이어짐</option>
+                   <option>보호자 확인 완료</option>
+                   <option>특징이 뚜렷이 다름</option>
+                   <option>거리·시간상 동일 개체 불가</option>
+                 </select>
+               </div>
+               <div class="btn-row" style="margin-top:7px">
+                 <button class="btn sm primary" data-a="연결" data-k="${key}">연결</button>
+                 <button class="btn sm" data-a="중복 병합" data-k="${key}">중복 병합</button>
+                 <button class="btn sm" data-a="무관" data-k="${key}">무관</button>
+               </div>`}
+      </div>`;
+    }).join("")}
+    <div class="human-note">AI는 사진과 위치·시간·특징을 비교해 후보를 제시합니다.
+      동일 개체 여부는 담당자가 원본 정보와 현장 상황을 확인한 뒤 결정합니다.
+      <b>AI는 동일 개체로 확정하지 않습니다.</b></div>`;
+
+  $$("#cands .btn[data-a]").forEach(b => b.onclick = () => {
+    const key = b.dataset.k, action = b.dataset.a;
+    const reason = ($(`select[data-rs="${CSS.escape(key)}"]`) || {}).value || "";
+    if (!reason){ toast("결정 사유를 선택하세요"); return; }
+    const [a, c] = key.split("|");
+    const rep = reports.find(x => x.id === a);
+    const before = STATUS[rep.status];
+    decisions[key] = { action, reason, by:"기관 담당자(시연 계정)", t:new Date(), prevStatus:rep.status };
+    if (action === "연결" && rep.status < 1){
+      rep.stamps[1] = rep.stamps[1] || new Date();
+      rep.status = 1;
+    }
+    addLog(a, `${action} — ${c} · 사유: ${reason}` +
+      (before !== STATUS[rep.status] ? ` · 상태 ${before} → ${STATUS[rep.status]}` : ""));
+    renderMap(); renderList(); renderDetail(); renderCands(); renderStatusPanel(); renderKpi();
+    toast(`${a} ↔ ${c} · ${action}`);
+  });
+
+  /* 잘못 병합한 경우 되돌리기 (메모 9) */
+  $$("#cands .btn[data-undo]").forEach(b => b.onclick = () => {
+    const key = b.dataset.undo, d = decisions[key], [a, c] = key.split("|");
+    const rep = reports.find(x => x.id === a);
+    if (d.action === "연결" && rep.status === 1 && d.prevStatus < 1){
+      rep.status = d.prevStatus; rep.stamps[1] = null;
+    }
+    delete decisions[key];
+    addLog(a, `결정 되돌림 — ${c} (${d.action} 취소)`);
+    renderMap(); renderList(); renderDetail(); renderCands(); renderStatusPanel(); renderKpi();
+    toast(`${a} ↔ ${c} · 되돌림`);
+  });
+}
+
+function renderStatusPanel(){
+  const r = reports.find(x => x.id === sel);
+  if (!r){ $("#statusPanel").innerHTML = `<div class="empty">왼쪽에서 제보를 선택하세요.</div>`; return; }
+  $("#statusPanel").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <b class="mono" style="font-size:14px">${r.id}</b>
+      <span style="display:inline-flex;gap:5px">${triageBadge(r.triage)}${badge(r.status)}</span>
+    </div>
+    <div class="hint" style="margin-top:3px">${esc(oneLine(r))}</div>
+    <div class="flow">${STATUS.map((s,i)=>`<div class="st ${i<=r.status?"done":""}">${s}</div>`).join("")}</div>
+    ${timelineHTML(r)}
+    <div style="margin-top:6px"><span class="sla sla-${slaOf(r).state}">${slaOf(r).icon} ${esc(slaOf(r).label)}</span></div>
+    <div class="btn-row" style="margin-top:12px">
+      ${STATUS.map((s,i)=>`<button class="btn sm ${i===r.status?"primary":""}" data-st="${i}">${s}</button>`).join("")}
+    </div>
+    <div class="hint" style="margin-top:9px">상태를 바꾸면 시민 공개 화면(② 지도)에 즉시 반영됩니다.</div>`;
+  $$("#statusPanel .btn[data-st]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.st;
+    if (i === r.status) return;
+    const back = i < r.status;
+    if (back){
+      for (let k = i+1; k < 4; k++) r.stamps[k] = null;   // 되돌리면 이후 계측값도 무효
+    } else {
+      const now = new Date();
+      for (let k = r.status+1; k <= i; k++) if (!r.stamps[k]) r.stamps[k] = now;
+    }
+    const prev = r.status;
+    r.status = i;
+    const took = back ? "" : ` (이전 단계 ${dur(r.stamps[i] - r.stamps[prev])} 소요)`;
+    addLog(r.id, `상태 변경 → ${STATUS[i]}${took}`);
+    renderMap(); renderList(); renderDetail(); renderNewList(); renderStatusPanel(); renderKpi();
+    toast(`${r.id} · ${STATUS[i]}`);
+  });
+}
+
+function addLog(id, what, by = "기관 담당자(시연 계정)"){
+  logs.unshift({ t:new Date(), id, what, by });
+  $("#log").innerHTML = logs.map(l =>
+    `<tr><td class="mono" style="color:var(--muted);white-space:nowrap">${hhmmss(l.t)}</td>
+         <td class="mono" style="font-size:12px">${esc(l.id)}</td>
+         <td>${esc(l.what)}<br><span class="hint" style="margin:0">처리자 ${esc(l.by)}</span></td></tr>`).join("");
+}
+
+/* ══════════ 모달: 서버 응답 / 권한표 ══════════ */
+function openModal(title, html){
+  $("#modalTitle").textContent = title;
+  $("#modalBody").innerHTML = html;
+  $("#modal").hidden = false;
+}
+$("#modalX").onclick = () => { $("#modal").hidden = true; };
+$("#modal").onclick = e => { if (e.target === $("#modal")) $("#modal").hidden = true; };
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("#modal").hidden = true; });
+
+/* 이 역할이 서버에서 실제로 받는 필드를 그대로 보여준다.
+   "화면에서 가렸다"가 아니라 "응답에 없다"를 증명하는 시연 장치. */
+$("#showPayload").onclick = () => {
+  const r = reports.find(x => x.id === sel) || reports[0];
+  const data = project(r);
+  const shown = Object.keys(data);
+  const missingKeys = HIDDEN_FIELDS.filter(k => !shown.includes(k));
+  const json = JSON.stringify(data, null, 2)
+    .replace(/"([^"]+)":/g, '"<span class="k">$1</span>":');
+  openModal(`GET /api/reports/${r.id} — 권한: ${{public:"일반 시민",owner:"제보자 본인",agency:"기관 담당자"}[role]}`, `
+    <div class="hint" style="margin:0 0 10px">
+      아래는 이 권한의 클라이언트가 서버에서 <b>실제로 받는 응답</b>입니다.
+      개발자 도구로 네트워크 요청을 열어도 없는 필드는 볼 수 없습니다.
+    </div>
+    <pre class="payload">${json}</pre>
+    ${missingKeys.length ? `
+      <div class="hint" style="margin-top:11px">응답에서 <b>제거된</b> 필드 (${missingKeys.length}개)</div>
+      <pre class="payload" style="margin-top:5px">${missingKeys.map(k=>`<span class="gone">${k}</span>`).join("\n")}</pre>
+      <div class="measure-note" style="margin-top:11px">
+        일반 사용자 화면에서 위치를 가리는 것만으로는 부족합니다.
+        일반 사용자에게 <b>전송되는 데이터 자체에서</b> 정확한 좌표를 제거해야 합니다.
+      </div>` : `
+      <div class="measure-note" style="margin-top:11px">
+        기관 응답에는 좌표·연락처·내부 메모가 포함됩니다. 대신 <b>담당 사건에 한해</b>,
+        <b>열람 사유와 기록</b>을 남긴 뒤에만 제공됩니다.
+      </div>`}`);
+};
+
+const PERM = [
+  ["동물 사진","y 가능","y 가능","y 가능","y 가능"],
+  ["동물 특징","y 가능","y 가능","y 가능","y 가능"],
+  ["대략적 위치","y 가능","y 가능","y 가능","y 가능"],
+  ["정확한 좌표","n 불가","p 본인 신고만","p 담당 사건만","p 감사 목적"],
+  ["목격 시간","y 가능","y 가능","y 가능","y 가능"],
+  ["이동 경로 추정","n 불가","p 제한적","y 가능","p 감사 목적"],
+  ["신고자 연락처","n 불가","p 중계 방식","p 동의·필요 시","p 관리 목적"],
+  ["처리 상태","y 가능","y 가능","y 변경 가능","y 전체 관리"],
+  ["내부 메모","n 불가","n 불가","y 가능","y 가능"],
+  ["중복·실종 매칭 후보","n 불가","p 본인 관련 일부","y 가능","y 가능"],
+  ["담당자 지정","n 불가","n 불가","y 가능","y 가능"],
+  ["데이터 다운로드","n 불가","p 본인 자료","p 승인 범위","y 관리 가능"],
+  ["위치 열람 기록","n 불가","p 본인 사건 일부","p 본인 기록","y 전체 확인"],
+  ["계정·권한 관리","n 불가","n 불가","p 제한적","y 가능"],
+];
+$("#showPerm").onclick = () => {
+  openModal("권한별 데이터 공개 범위", `
+    <div class="hint" style="margin:0 0 10px">
+      서비스의 핵심은 많은 정보를 공개하는 것이 아니라, 각 사용자가 맡은 역할을 수행할 수 있을 만큼만 제공하는 것입니다.
+    </div>
+    <div style="overflow-x:auto"><table class="perm">
+      <thead><tr><th>데이터/기능</th><th>일반 사용자</th><th>제보자·보호자</th><th>기관·보호소</th><th>시스템 관리자</th></tr></thead>
+      <tbody>${PERM.map(row => `<tr><td>${row[0]}</td>${row.slice(1).map(c => {
+        const [cls, ...txt] = c.split(" ");
+        return `<td class="${cls}">${txt.join(" ")}</td>`; }).join("")}</tr>`).join("")}</tbody>
+    </table></div>
+    <div class="measure-note" style="margin-top:12px">
+      D단계(시스템 관리자)의 계정 승인·권한 회수·감사 로그와, 기관 계정 인증·2단계 인증·대량 조회 제한은
+      서버가 필요한 항목이라 이 프로토타입에는 <b>구현되어 있지 않습니다.</b>
+    </div>`);
+};
+
+/* 초기 렌더 */
+applyRole(); renderAccess();
+renderMap(); renderList(); renderDetail(); renderNewList(); renderStatusPanel(); renderKpi();
+
+/* 경과시간은 계속 흐르므로 주기적으로 다시 계산한다. 입력 중인 제보 화면(#s1)은 건드리지 않는다. */
+setInterval(() => {
+  renderKpi();
+  if ($("#s2").classList.contains("on")){ renderMap(); renderList(); renderDetail(); }
+  else if ($("#s3").classList.contains("on")) renderStatusPanel();
+}, 30000);
+})();
+</script>
+</body>
+</html>
