@@ -1,0 +1,17 @@
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  line-height: 1;
+}
+
+.brand-logo svg {
+  flex: none;
+  display: block;
+}
+
+.brand-logo__word {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}

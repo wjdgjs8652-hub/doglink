@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { formatAbsoluteSeconds } from "../../lib/date-time";
+import { BrandLogo } from "../../components/BrandLogo";
 import { EmergencyCounter } from "./EmergencyCounter";
 import "./GlobalBar.css";
 
@@ -61,14 +62,9 @@ export function GlobalBar({
     <header className="global-bar">
       <div className="global-bar__brand">
         <span className="global-bar__logo" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <rect x="1.5" y="1.5" width="17" height="17" rx="4.5" stroke="currentColor" strokeWidth="1.6" />
-            <circle cx="7" cy="9" r="1.3" fill="currentColor" />
-            <circle cx="13" cy="9" r="1.3" fill="currentColor" />
-            <path d="M7.4 13.2c1.6 1.2 3.6 1.2 5.2 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+          <BrandLogo size={22} withText={false} />
         </span>
-        <span className="global-bar__title">DOG-LINK 운영자 콘솔</span>
+        <span className="global-bar__title">DogLink 운영자 콘솔</span>
         {organizationName && (
           <span className="global-bar__org">{organizationName}</span>
         )}

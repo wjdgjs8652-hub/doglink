@@ -13,15 +13,8 @@
   padding: var(--space-10) var(--screen-padding-x) var(--space-6);
 }
 
-.entry__service {
-  font: var(--font-label);
-  color: var(--color-primary-600);
-  letter-spacing: 0.08em;
+.entry__logo {
   margin-bottom: var(--space-6);
-}
-
-.entry__icon {
-  margin-bottom: var(--space-5);
 }
 
 .entry__headline {

@@ -1,3 +1,4 @@
+import { BrandLogo } from "./BrandLogo";
 import "./AppHeader.css";
 
 export interface AppHeaderProps {
@@ -29,7 +30,9 @@ export function AppHeader({ title = "DOG-LINK", showBack = false, onBack }: AppH
       ) : (
         <span className="app-header__spacer" aria-hidden="true" />
       )}
-      <h1 className="app-header__title">{title}</h1>
+      <h1 className="app-header__title">
+        {title === "DOG-LINK" ? <BrandLogo size={22} /> : title}
+      </h1>
       <span className="app-header__spacer" aria-hidden="true" />
     </header>
   );
