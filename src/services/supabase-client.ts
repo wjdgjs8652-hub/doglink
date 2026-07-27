@@ -4,8 +4,9 @@
  * 미설정 시 isSupabaseConfigured=false — 각 서비스는 mock adapter로 폴백한다.
  * anon 키는 클라이언트 공개용 키이며, service_role 키는 절대 프런트엔드에 두지 않는다.
  */
-const url = import.meta.env.VITE_SUPABASE_URL ?? "";
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
+/* trim: 배포 환경 변수에 섞일 수 있는 BOM·공백 문자를 방어적으로 제거 */
+const url = (import.meta.env.VITE_SUPABASE_URL ?? "").trim();
+const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY ?? "").trim();
 
 export const isSupabaseConfigured = Boolean(url && anonKey);
 

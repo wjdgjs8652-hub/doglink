@@ -27,8 +27,9 @@ for (const name of [".env", ".env.local"]) {
   }
 }
 
-const url = process.env.VITE_SUPABASE_URL || "";
-const anonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+/* trim: 환경 변수에 섞일 수 있는 BOM·공백 문자를 방어적으로 제거 */
+const url = (process.env.VITE_SUPABASE_URL || "").trim();
+const anonKey = (process.env.VITE_SUPABASE_ANON_KEY || "").trim();
 
 const body = `/* 자동 생성 파일 — 편집·커밋 금지 (scripts/gen-admin-config.mjs) */
 window.DOGLINK_CONFIG = ${
