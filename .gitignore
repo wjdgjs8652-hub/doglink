@@ -17,3 +17,7 @@ dist
 ~$*
 *.tmp
 desktop.ini
+
+# 빌드 시 환경 변수에서 생성 (scripts/gen-admin-config.mjs) — 키 커밋 금지
+operator/js/runtime-config.js
+public/admin/js/runtime-config.js

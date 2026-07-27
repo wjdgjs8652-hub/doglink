@@ -178,9 +178,17 @@
     </svg>`;
   }
 
+  /* ── 사진 렌더링: 실제 URL이 있으면 <img>, 없으면 시연용 SVG ── */
+  function photoHTML(p) {
+    if (p && typeof p.url === "string" && /^https?:\/\//.test(p.url)) {
+      return `<img class="photo-img" src="${esc(p.url)}" alt="${esc(p.alt || "제보 사진")}" loading="lazy">`;
+    }
+    return dogSVG(p && p.coat, (p && p.patt) || "");
+  }
+
   window.DL = {
     esc, pad, hhmm, hhmmss, ymd, ymdhm, ymdhms, relTime, durText,
     TRIAGE, triageBadge, STATUS_META, statusBadge, processTimeline,
-    toast, openDialog, dogSVG,
+    toast, openDialog, dogSVG, photoHTML,
   };
 })();

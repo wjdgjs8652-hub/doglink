@@ -13,7 +13,9 @@
 <body>
 <div id="app"></div>
 
-<!-- 로드 순서 고정: 공용 → 상태 머신 → mock 데이터 → 서비스 → 컴포넌트 → 화면 → 앱 -->
+<!-- 로드 순서 고정: 설정 → 공용 → 상태 머신 → mock 데이터 → 서비스 → 컴포넌트 → 화면 → 앱 → Supabase 동기화 -->
+<!-- runtime-config.js는 빌드 시 환경 변수에서 생성된다 (커밋 금지). 없으면 mock 전용 모드 -->
+<script src="js/runtime-config.js"></script>
 <script src="../shared/components.js"></script>
 <script src="js/state-machine.js"></script>
 <script src="js/mock-data.js"></script>
@@ -21,5 +23,6 @@
 <script src="js/components.js"></script>
 <script src="js/screens.js"></script>
 <script src="js/app.js"></script>
+<script src="js/supabase-adapter.js"></script>
 </body>
 </html>

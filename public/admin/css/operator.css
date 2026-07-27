@@ -425,3 +425,14 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
   .stats-wrap { overflow: visible; }
   body { background: #fff; }
 }
+
+/* ── 실사진(Supabase 업로드) 렌더링 — SVG 자리표시와 동일 프레임 유지 ── */
+.photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit;
+}
+.pviewer .img .photo-img { object-fit: contain; background: #1b1d21; }
+.photo-full .photo-img { max-height: 70vh; object-fit: contain; }

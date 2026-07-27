@@ -186,9 +186,11 @@
   function candidatesFor(reportId) {
     const r = getReport(reportId);
     if (!r || r.mergedIntoReportId) return [];
+    /* 외형 특징이 없는 시민 실데이터 제보는 자동 매칭 후보 산정에서 제외 */
+    if (r.featuresUnknown) return [];
     const pool = [];
     reports.forEach(o => {
-      if (o.reportId === r.reportId || o.mergedIntoReportId) return;
+      if (o.reportId === r.reportId || o.mergedIntoReportId || o.featuresUnknown) return;
       const m = matchScore(r, Object.assign({}, o.features,
         { x: o.location.mapX, y: o.location.mapY, submittedAt: o.submittedAt }));
       pool.push({ candidateId: o.reportId, candidateType: "report", ref: o,
