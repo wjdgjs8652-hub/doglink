@@ -56,7 +56,7 @@
     root.innerHTML = `
     <div class="login-wrap">
       <div class="login-intro">
-        <div class="logo">${DL.brandLogoSVG(40, "#fff", "var(--color-primary-700)")}<span>DogLink <span class="logo-suffix">운영자 콘솔</span></span></div>
+        <div class="logo">${DL.brandSymbolHTML(44)}<span>DogLink <span class="logo-suffix">운영자 콘솔</span></span></div>
         <p>유기견·유실견 발견 제보 연계 서비스의 기관 담당자용 관제 시스템입니다.
         시민 제보 큐 확인, AI 트리아지 검토, 상태 관리, 통계·보고 업무를 지원합니다.</p>
         <p style="font-size:12px;opacity:.75">지자체 · 동물보호센터 · 구조기관 담당자 전용</p>
@@ -101,7 +101,7 @@
     const initial = me ? me.displayName.slice(0, 1) : "?";
     return `<header class="gbar">
       <button class="icon-btn fsb-toggle" id="fsbToggle" aria-label="필터 열기" title="필터">☰</button>
-      <div class="brand">${DL.brandLogoSVG(28)}
+      <div class="brand">${DL.brandSymbolHTML(30)}
         <span class="brand-word">DogLink<small>운영자 콘솔 · ${esc(me ? me.organizationName : "")}</small></span></div>
       <nav aria-label="콘솔 화면">
         <a href="#/queue" ${active === "queue" ? 'aria-current="page"' : ""}>제보 큐</a>

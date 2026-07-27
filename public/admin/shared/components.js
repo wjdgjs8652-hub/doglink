@@ -186,28 +186,25 @@
     return dogSVG(p && p.coat, (p && p.patt) || "");
   }
 
-  /* ── 브랜드 로고 심볼 (DogLink — 위치 핀 + 강아지 실루엣 + 물음표) ──
-     fg: 핀·강아지 색, bg: 원형 창·물음표 색.
-     밝은 배경: 기본값(브랜드 블루 + 흰 창) / 어두운 배경: fg "#fff", bg에 배경색.
+  /* ── 브랜드 심볼 (shared/brand-symbol.png — 원본 이미지 그대로, 임의 수정 금지) ──
+     LOGO.png에서 픽셀 그대로 잘라낸 심볼을 <img>로 렌더한다.
+     경로는 이 스크립트 태그의 src 기준으로 계산하므로 operator/(../shared/)와
+     public/admin/(shared/) 어느 배치에서도, file://에서도 동작한다.
      워드마크("DogLink")는 폰트 일관성을 위해 HTML 텍스트로 옆에 붙인다. */
-  const BRAND_BLUE = "#5B7CFA";
-  let logoSeq = 0;
-  function brandLogoSVG(size = 26, fg = BRAND_BLUE, bg = "#fff") {
-    const id = `dl-logo-clip-${++logoSeq}`;
-    return `<svg width="${size}" height="${size}" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
-      <path d="M48 4 C67.9 4 84 20.1 84 40 C84 54.2 74.9 64.4 65 73.8 C58.9 79.6 52.7 85.6 48 93 C43.3 85.6 37.1 79.6 31 73.8 C21.1 64.4 12 54.2 12 40 C12 20.1 28.1 4 48 4 Z" fill="${fg}"/>
-      <circle cx="48" cy="40" r="24" fill="${bg}"/>
-      <clipPath id="${id}"><circle cx="48" cy="40" r="24"/></clipPath>
-      <g clip-path="url(#${id})">
-        <path d="M41 66 L41 40 L36 19 L50 30 L57 29 C63 29 68 33 70 38 L73 41 L70 45 C68 48 63 49 58 48 L56 50 L58 66 Z" fill="${fg}"/>
-      </g>
-      <text x="52" y="47" text-anchor="middle" font-weight="800" font-size="17" fill="${bg}">?</text>
-    </svg>`;
+  const BRAND_BLUE = "#4F7EFF"; /* LOGO.png 워드마크에서 샘플링한 값 */
+  const SHARED_BASE = (() => {
+    const s = [...document.scripts].find(el => /shared\/components\.js/.test(el.src || ""));
+    return s ? s.src.slice(0, s.src.lastIndexOf("/") + 1) : "";
+  })();
+  function brandSymbolHTML(size = 26) {
+    /* 원본 비율 464×554 — 높이 기준, 폭 자동 */
+    return `<img class="brand-symbol" src="${SHARED_BASE}brand-symbol.png" alt="" aria-hidden="true"` +
+      ` style="height:${size}px;width:auto;display:block" draggable="false">`;
   }
 
   window.DL = {
     esc, pad, hhmm, hhmmss, ymd, ymdhm, ymdhms, relTime, durText,
     TRIAGE, triageBadge, STATUS_META, statusBadge, processTimeline,
-    toast, openDialog, dogSVG, photoHTML, brandLogoSVG, BRAND_BLUE,
+    toast, openDialog, dogSVG, photoHTML, brandSymbolHTML, BRAND_BLUE,
   };
 })();
